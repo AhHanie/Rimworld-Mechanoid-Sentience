@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+    <MechanoidSentience.LoadingLabel>Mechanoid Sentience Loading</MechanoidSentience.LoadingLabel>
+    <MechanoidSentience.SettingsTitle>Mechanoid Sentience</MechanoidSentience.SettingsTitle>
+    <MechanoidSentience.EnableDebugLogging>Enable debug logging</MechanoidSentience.EnableDebugLogging>
+    <MechanoidSentience.EnableDebugLoggingTooltip>Write extra Mechanoid Sentience diagnostic messages to the game log. Useful when troubleshooting.</MechanoidSentience.EnableDebugLoggingTooltip>
+
+    <MechanoidSentience.ConversionSucceeded>{0} has become a sentient {1}.</MechanoidSentience.ConversionSucceeded>
+    <MechanoidSentience.ConversionFailed>Making {0} sentient failed and the change was undone. See the log for details.</MechanoidSentience.ConversionFailed>
+    <MechanoidSentience.Reject.NoPawn>There is no living mechanoid there.</MechanoidSentience.Reject.NoPawn>
+    <MechanoidSentience.Reject.MissingDlc>Sentient mechanoids require the Biotech expansion.</MechanoidSentience.Reject.MissingDlc>
+    <MechanoidSentience.Reject.AlreadySentient>{0} is already sentient.</MechanoidSentience.Reject.AlreadySentient>
+    <MechanoidSentience.Reject.NotMechanoid>{0} is not a mechanoid.</MechanoidSentience.Reject.NotMechanoid>
+    <MechanoidSentience.Reject.NotSpawned>{0} is not on the map.</MechanoidSentience.Reject.NotSpawned>
+    <MechanoidSentience.Reject.Gestating>{0} is still being gestated.</MechanoidSentience.Reject.Gestating>
+    <MechanoidSentience.Reject.Deactivated>{0} is deactivated. Reactivate it first.</MechanoidSentience.Reject.Deactivated>
+    <MechanoidSentience.Reject.Unsupported>{0} cannot be made sentient: no sentient version of this race and kind was generated (it must be a mechanoid with a body and a weight class).</MechanoidSentience.Reject.Unsupported>
+    <MechanoidSentience.Reject.NoBrain>{0} has no artificial brain.</MechanoidSentience.Reject.NoBrain>
+    <MechanoidSentience.Reject.NoIdeo>The player faction has no primary ideoligion, so a sentient mechanoid would have nothing to believe in.</MechanoidSentience.Reject.NoIdeo>
+
+    <MechanoidSentience.AwakeningLetterLabel>Mechanoid awakening</MechanoidSentience.AwakeningLetterLabel>
+    <MechanoidSentience.AwakeningLetterText>Without warning or command, {0} has become aware of itself. It now calls itself {PAWN_nameFull} and has joined the colony as a sentient mechanoid, no longer needing an overseer.</MechanoidSentience.AwakeningLetterText>
+
+    <MechanoidSentience.CatalystCannotStart>{0} cannot carry the catalyst to {1} right now.</MechanoidSentience.CatalystCannotStart>
+
+    <MechanoidSentience.CannotEquipNonWeapon>Sentient mechanoids can only carry a weapon.</MechanoidSentience.CannotEquipNonWeapon>
+    <MechanoidSentience.CannotWearApparel>cannot wear apparel</MechanoidSentience.CannotWearApparel>
+</LanguageData>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <BodyTypeDef>
+    <defName>MS_SentientMech</defName>
+    <headOffset>(0, 0)</headOffset>
+    <bedOffset>0</bedOffset>
+    <bodyGraphicScale>(1, 1)</bodyGraphicScale>
+    <bodyNakedGraphicPath>Things/Pawn/Humanlike/Bodies/Naked_Thin</bodyNakedGraphicPath>
+    <bodyDessicatedGraphicPath>Things/Pawn/Humanlike/Bodies/Dessicated/Dessicated_Thin</bodyDessicatedGraphicPath>
+  </BodyTypeDef>
+
+</Defs>

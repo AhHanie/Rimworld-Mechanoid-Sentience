@@ -1,0 +1,20 @@
+using System.Collections.Generic;
+using System.Reflection;
+using HarmonyLib;
+using Verse;
+
+namespace Mechanoid_Sentience
+{
+    [HarmonyPatch(typeof(PawnRenderer), nameof(PawnRenderer.RenderPawnAt))]
+    public static class PawnRenderer_RenderPawnAt
+    {
+        private static readonly MethodInfo Humanlike = AccessTools.PropertyGetter(typeof(RaceProperties), nameof(RaceProperties.Humanlike));
+        private static readonly MethodInfo Replacement = AccessTools.Method(typeof(SentientMechUtility), nameof(SentientMechUtility.IsHumanlikeVisuals));
+
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            return SentientMechUtility.ReplaceCalls(instructions, Humanlike, Replacement, 1, nameof(PawnRenderer_RenderPawnAt));
+        }
+    }
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <IncidentDef>
+    <defName>MS_MechanoidAwakening</defName>
+    <label>mechanoid awakening</label>
+    <category>Misc</category>
+    <targetTags>
+      <li>Map_PlayerHome</li>
+    </targetTags>
+    <workerClass>Mechanoid_Sentience.IncidentWorker_MechanoidAwakening</workerClass>
+    <baseChance>1.0</baseChance>
+    <earliestDay>20</earliestDay>
+    <minRefireDays>180</minRefireDays>
+  </IncidentDef>
+
+</Defs>

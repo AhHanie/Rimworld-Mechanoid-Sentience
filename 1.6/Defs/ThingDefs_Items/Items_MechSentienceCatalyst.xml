@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <ThingDef ParentName="ResourceBase">
+    <defName>MS_MechSentienceCatalyst</defName>
+    <label>mechanoid sentience catalyst</label>
+    <description>A single-use device that awakens one mechanoid, giving it a mind of its own. The mechanoid becomes a free, sentient member of the colony and keeps its body, health and weapon.\n\nA colonist must carry it to a living mechanoid that can be made sentient. It is used up only when the mechanoid awakens.</description>
+    <graphicData>
+      <texPath>MechanoidSentience/Things/Item/Special/MechSentienceCatalyst</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+    </graphicData>
+    <thingClass>ThingWithComps</thingClass>
+    <useHitPoints>true</useHitPoints>
+    <techLevel>Ultra</techLevel>
+    <statBases>
+      <MaxHitPoints>80</MaxHitPoints>
+      <MarketValue>2500</MarketValue>
+      <Mass>0.2</Mass>
+      <Flammability>0.2</Flammability>
+      <DeteriorationRate>2.0</DeteriorationRate>
+    </statBases>
+    <stackLimit>1</stackLimit>
+    <tradeability>All</tradeability>
+    <thingCategories>
+      <li>ItemsMisc</li>
+    </thingCategories>
+    <thingSetMakerTags>
+      <li>RewardStandardLowFreq</li>
+    </thingSetMakerTags>
+    <tradeTags>
+      <li>ExoticMisc</li>
+    </tradeTags>
+    <comps>
+      <li Class="CompProperties_Usable">
+        <useJob>UseItem</useJob>
+        <useLabel>Use {0_label}</useLabel>
+        <useDuration>0</useDuration>
+        <showUseGizmo>true</showUseGizmo>
+      </li>
+      <li Class="Mechanoid_Sentience.CompProperties_Targetable_Mechanoid" />
+      <li Class="Mechanoid_Sentience.CompProperties_TargetEffect_MakeMechSentient">
+        <soundOnUsed>MechSerumUsed</soundOnUsed>
+      </li>
+    </comps>
+  </ThingDef>
+
+</Defs>
