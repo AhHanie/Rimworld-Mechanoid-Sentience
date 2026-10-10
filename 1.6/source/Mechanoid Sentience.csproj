@@ -65,6 +65,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compatibility\DeadMansSwitch.cs" />
     <Compile Include="Compatibility\RimHudEnergyRow.cs" />
     <Compile Include="Conversion\CompReconciler.cs" />
     <Compile Include="Conversion\DebugActions.cs" />
@@ -106,6 +107,7 @@
     <Compile Include="Patches\Graphic_PawnBodySilhouette_DrawWorker.cs" />
     <Compile Include="Patches\HealthAIUtility_WantsToBeRescued.cs" />
     <Compile Include="Patches\InteractionWorker_RandomSelectionWeight.cs" />
+    <Compile Include="Patches\ITab_Pawn_Character_IsVisible.cs" />
     <Compile Include="Patches\ITab_Pawn_Social_IsVisible.cs" />
     <Compile Include="Patches\JobGiver_Work_PawnCanUseWorkGiver.cs" />
     <Compile Include="Patches\MechanitorUtility_CanDraftMech.cs" />
@@ -147,6 +149,7 @@
     <Compile Include="Patches\ThoughtUtility_CanGetThought.cs" />
     <Compile Include="Patches\ThoughtWorker_AgeReversalDemanded_ShouldHaveThought.cs" />
     <Compile Include="Patches\VerbTracker_CreateVerbTargetCommand.cs" />
+    <Compile Include="Patches\WeaponUsableMech_SpawnSetup.cs" />
     <Compile Include="Patches\WorkGiver_RepairMech_ShouldSkip.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

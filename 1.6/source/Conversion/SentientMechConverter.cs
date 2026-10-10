@@ -42,6 +42,10 @@ namespace Mechanoid_Sentience
             {
                 return "MechanoidSentience.Reject.NotMechanoid".Translate(pawn.LabelShort);
             }
+            if (DeadMansSwitchCompat.IsPlatformDrone(pawn))
+            {
+                return "MechanoidSentience.Reject.PlatformDrone".Translate(pawn.LabelShort);
+            }
             if (!pawn.Spawned || pawn.Map == null)
             {
                 return "MechanoidSentience.Reject.NotSpawned".Translate(pawn.LabelShort);
@@ -61,6 +65,10 @@ namespace Mechanoid_Sentience
             if (pawn.health?.hediffSet?.GetBrain() == null)
             {
                 return "MechanoidSentience.Reject.NoBrain".Translate(pawn.LabelShort);
+            }
+            if (DeadMansSwitchCompat.IsLeaving(pawn))
+            {
+                return "MechanoidSentience.Reject.DmsLeaving".Translate(pawn.LabelShort);
             }
             if (ModsConfig.IdeologyActive && Faction.OfPlayer.ideos?.PrimaryIdeo == null)
             {
@@ -115,6 +123,7 @@ namespace Mechanoid_Sentience
         private static void Convert(Pawn pawn, ThingDef sentientRace, PawnKindDef sentientKind, ConversionState state)
         {
             Map map = pawn.Map;
+            DmsRaceKind dmsKind = DeadMansSwitchCompat.KindOfOriginal(pawn.def);
 
             pawn.TryGetComp<CompCanBeDormant>()?.WakeUp();
             if (pawn.Drafted)
@@ -135,6 +144,7 @@ namespace Mechanoid_Sentience
             state.Stage = ConversionStage.Despawned;
             pawn.DeSpawn();
 
+            RemoveDeadMansSwitchComps(pawn, dmsKind);
             pawn.def = sentientRace;
             pawn.kindDef = sentientKind;
             ReconcileComps(pawn, sentientRace);
@@ -210,6 +220,26 @@ namespace Mechanoid_Sentience
             OverseerSubjectField.SetValue(pawn, null);
         }
 
+        private static void RemoveDeadMansSwitchComps(Pawn pawn, DmsRaceKind kind)
+        {
+            if (kind != DmsRaceKind.Automatroid && kind != DmsRaceKind.HumanlikeAutomatroid)
+            {
+                return;
+            }
+            if (!(CompsField.GetValue(pawn) is List<ThingComp> live))
+            {
+                return;
+            }
+            List<ThingComp> kept = DeadMansSwitchCompat.WithoutOwnershipComps(live, kind, out List<ThingComp> removed);
+            if (removed.Count == 0)
+            {
+                return;
+            }
+            SetComps(pawn, kept);
+            DeadMansSwitchCompat.ClearCachedDeadManSwitch(pawn);
+            Logger.Message("Removed " + removed.Count + " Dead Man's Switch comp(s) from " + pawn.ToStringSafe() + ": " + removed.Select(c => c.GetType().FullName).ToCommaList());
+        }
+
         private static void ReconcileComps(Pawn pawn, ThingDef sentientRace)
         {
             var live = CompsField.GetValue(pawn) as List<ThingComp>;
@@ -239,7 +269,7 @@ namespace Mechanoid_Sentience
             return comp;
         }
 
-        private static void SetComps(Pawn pawn, List<ThingComp> comps)
+        internal static void SetComps(Pawn pawn, List<ThingComp> comps)
         {
             if (comps == null || comps.Count == 0)
             {

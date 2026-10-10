@@ -57,20 +57,35 @@ namespace Mechanoid_Sentience
 
         public static string FirstDifference(IList<CompProperties> original, IList<CompProperties> sentient, out bool hasVefExtra)
         {
-            List<CompSignature> expected = ExpectedBase(original);
+            return FirstDifference(original, sentient, null, out hasVefExtra);
+        }
+
+        public static string FirstDifference(IList<CompProperties> original, IList<CompProperties> sentient, Func<CompSignature, bool> isAllowedRemoval, out bool hasVefExtra)
+        {
+            List<CompSignature> expected = ExpectedBase(original, isAllowedRemoval);
             List<CompSignature> actual = (sentient ?? new List<CompProperties>()).Select(CompSignature.Of).ToList();
             string difference = Difference(expected, actual, out hasVefExtra);
             if (difference == null)
             {
                 return null;
             }
-            return difference + " Source without overseer subject (" + expected.Count + "): " + Format(expected)
+            string label = isAllowedRemoval == null ? "Source without overseer subject" : "Source without overseer subject and allowed removals";
+            return difference + " " + label + " (" + expected.Count + "): " + Format(expected)
                 + ". Sentient (" + actual.Count + "): " + Format(actual) + ".";
         }
 
         public static List<CompSignature> ExpectedBase(IList<CompProperties> original)
         {
-            return (original ?? new List<CompProperties>()).Where(c => !(c is CompProperties_OverseerSubject)).Select(CompSignature.Of).ToList();
+            return ExpectedBase(original, null);
+        }
+
+        public static List<CompSignature> ExpectedBase(IList<CompProperties> original, Func<CompSignature, bool> isAllowedRemoval)
+        {
+            return (original ?? new List<CompProperties>())
+                .Where(c => !(c is CompProperties_OverseerSubject))
+                .Select(CompSignature.Of)
+                .Where(s => isAllowedRemoval == null || !isAllowedRemoval(s))
+                .ToList();
         }
 
         public static string Format(IList<CompSignature> signatures)

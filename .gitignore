@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Third-party assemblies copied for the offline patch tests (not ours to redistribute)
+tools/PatchTest/Assemblies/

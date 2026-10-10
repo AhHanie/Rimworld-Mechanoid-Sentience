@@ -18,6 +18,7 @@ namespace Mechanoid_Sentience
         public static void Generate()
         {
             SentientMechRegistry.Reset();
+            DeadMansSwitchCompat.Reset();
             if (!ModsConfig.BiotechActive)
             {
                 return;
@@ -46,9 +47,11 @@ namespace Mechanoid_Sentience
                     continue;
                 }
 
-                ThingDef sentientRace = MakeSentientRace(race, mainTree, constantTree, allWorkTypes);
+                DmsRaceKind dmsKind = DeadMansSwitchCompat.ClassifyRace(race);
+                ThingDef sentientRace = MakeSentientRace(race, mainTree, constantTree, allWorkTypes, dmsKind);
                 CloneLifeStages(sentientRace, kinds[0]);
                 SentientMechRegistry.Register(race, sentientRace);
+                DeadMansSwitchCompat.Record(race, sentientRace, dmsKind);
                 DefGenerator.AddImpliedDef(sentientRace);
                 AttachRecipes(race, sentientRace);
 
@@ -60,6 +63,7 @@ namespace Mechanoid_Sentience
                 }
             }
             SentientMechRegistry.Freeze();
+            DeadMansSwitchCompat.LogSummary();
         }
 
         private static bool IsSupportedMechRace(ThingDef race)
@@ -76,7 +80,7 @@ namespace Mechanoid_Sentience
             return props.body != null && props.mechWeightClass != null;
         }
 
-        private static ThingDef MakeSentientRace(ThingDef original, ThinkTreeDef mainTree, ThinkTreeDef constantTree, List<WorkTypeDef> allWorkTypes)
+        private static ThingDef MakeSentientRace(ThingDef original, ThinkTreeDef mainTree, ThinkTreeDef constantTree, List<WorkTypeDef> allWorkTypes, DmsRaceKind dmsKind)
         {
             ThingDef clone = DefCloner.Clone(original);
             clone.defName = SentientMechRegistry.DefPrefix + original.defName;
@@ -97,6 +101,15 @@ namespace Mechanoid_Sentience
             race.mechWorkTypePriorities = null;
 
             clone.comps?.RemoveAll(c => c is CompProperties_OverseerSubject);
+
+            if (dmsKind == DmsRaceKind.Automatroid || dmsKind == DmsRaceKind.HumanlikeAutomatroid)
+            {
+                clone.comps?.RemoveAll(c => DeadMansSwitchCompat.IsRemovedFromSentient(dmsKind, CompSignature.Of(c)));
+            }
+            if (dmsKind == DmsRaceKind.HumanlikeAutomatroid)
+            {
+                DeadMansSwitchCompat.EnsureCharacterTabs(clone);
+            }
 
             clone.statBases?.RemoveAll(s => s.stat == StatDefOf.WorkSpeedGlobal);
 

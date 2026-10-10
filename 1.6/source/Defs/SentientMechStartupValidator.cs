@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using RimWorld;
@@ -10,6 +11,7 @@ namespace Mechanoid_Sentience
     {
         private static bool validated;
         private static int vefExtras;
+        private static int dmsRaces;
 
         static SentientMechStartupValidator()
         {
@@ -34,6 +36,15 @@ namespace Mechanoid_Sentience
                     continue;
                 }
                 checkedPairs++;
+                DmsRaceKind originalKind = DeadMansSwitchCompat.KindOfOriginal(original);
+                if (originalKind != DmsRaceKind.None)
+                {
+                    dmsRaces++;
+                    foreach (string finding in DeadMansSwitchCompat.CompositionFindings(original, originalKind))
+                    {
+                        Log.Warning("[Mechanoid Sentience] " + original.defName + " (" + originalKind + "): " + finding + ".");
+                    }
+                }
                 foreach (string problem in RaceProblems(original, sentient))
                 {
                     Log.Error("[Mechanoid Sentience] " + sentient.defName + ": " + problem);
@@ -52,7 +63,7 @@ namespace Mechanoid_Sentience
                     Log.Error("[Mechanoid Sentience] " + sentientKind.defName + ": " + problem);
                 }
             }
-            Logger.Message("Validated " + checkedPairs + " sentient mechanoid race(s)" + (vefExtras > 0 ? " (" + vefExtras + " with the optional VEF ability comp)." : "."));
+            Logger.Message("Validated " + checkedPairs + " sentient mechanoid race(s)" + (vefExtras > 0 ? " (" + vefExtras + " with the optional VEF ability comp)" : "") + (dmsRaces > 0 ? " (" + dmsRaces + " Dead Man's Switch / FFF race(s))." : "."));
         }
 
         private static IEnumerable<string> RaceProblems(ThingDef original, ThingDef sentient)
@@ -95,7 +106,8 @@ namespace Mechanoid_Sentience
             {
                 yield return "still has the overseer subject comp";
             }
-            string compDifference = CompListComparer.FirstDifference(original.comps, sentient.comps, out bool hasVefExtra);
+            DmsRaceKind dmsKind = DeadMansSwitchCompat.KindOfSentient(sentient);
+            string compDifference = CompListComparer.FirstDifference(original.comps, sentient.comps, dmsKind == DmsRaceKind.None ? null : (Func<CompSignature, bool>)(s2 => DeadMansSwitchCompat.IsRemovedFromSentient(dmsKind, s2)), out bool hasVefExtra);
             if (compDifference != null)
             {
                 yield return "comp list differs from " + original.defName + ". " + compDifference;
@@ -103,6 +115,10 @@ namespace Mechanoid_Sentience
             else if (hasVefExtra)
             {
                 vefExtras++;
+            }
+            if (dmsKind == DmsRaceKind.HumanlikeAutomatroid && (sentient.inspectorTabs == null || !sentient.inspectorTabs.Contains(typeof(ITab_Pawn_Character)) || !sentient.inspectorTabs.Contains(typeof(ITab_Pawn_Social))))
+            {
+                yield return "humanlike Dead Man's Switch mech lacks the Character or Social tab";
             }
             foreach (CompProperties comp in sentient.comps ?? new List<CompProperties>())
             {

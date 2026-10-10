@@ -16,6 +16,8 @@
     <MechanoidSentience.Reject.Deactivated>{0} is deactivated. Reactivate it first.</MechanoidSentience.Reject.Deactivated>
     <MechanoidSentience.Reject.Unsupported>{0} cannot be made sentient: no sentient version of this race and kind was generated (it must be a mechanoid with a body and a weight class).</MechanoidSentience.Reject.Unsupported>
     <MechanoidSentience.Reject.NoBrain>{0} has no artificial brain.</MechanoidSentience.Reject.NoBrain>
+    <MechanoidSentience.Reject.PlatformDrone>{0} is a platform drone. Its platform would still control it and its power cell would still run it, so it cannot be made sentient.</MechanoidSentience.Reject.PlatformDrone>
+    <MechanoidSentience.Reject.DmsLeaving>{0} has already been flagged to leave the colony and cannot be made sentient.</MechanoidSentience.Reject.DmsLeaving>
     <MechanoidSentience.Reject.NoIdeo>The player faction has no primary ideoligion, so a sentient mechanoid would have nothing to believe in.</MechanoidSentience.Reject.NoIdeo>
 
     <MechanoidSentience.AwakeningLetterLabel>Mechanoid awakening</MechanoidSentience.AwakeningLetterLabel>

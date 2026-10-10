@@ -7,7 +7,7 @@
         <li>1.6</li>
     </supportedVersions>
     <description>Turns a mechanoid into a sentient, player controlled colonist with a name, backstory, traits, skills and passions, while keeping its body, health, weapon and appearance. Use the rare mechanoid sentience catalyst on a living mechanoid, or wait for one to awaken on its own.</description>
-    <modVersion>1.0.0</modVersion>
+    <modVersion>1.1.0</modVersion>
     <url>https://steamcommunity.com/sharedfiles/filedetails/?id=3816620528</url>
     <modDependencies>
         <li>
@@ -29,5 +29,7 @@
         <li>Ludeon.RimWorld.Biotech</li>
         <li>Ludeon.RimWorld.Anomaly</li>
         <li>Ludeon.RimWorld.Odyssey</li>
+        <li>AOBA.Framework</li>
+        <li>Aoba.DeadManSwitch.Core</li>
     </loadAfter>
 </ModMetaData>
