@@ -130,19 +130,21 @@ namespace Mechanoid_Sentience
             }
 
             pawn.apparel?.DropAll(pawn.Position, forbid: false);
-            state.RemovedOverseerComp = RemoveOverseerComp(pawn, map);
+            RemoveOverseerComp(pawn, map);
 
             state.Stage = ConversionStage.Despawned;
             pawn.DeSpawn();
 
+            pawn.def = sentientRace;
+            pawn.kindDef = sentientKind;
+            ReconcileComps(pawn, sentientRace);
+
             if (ForceFailureForTesting)
             {
                 ForceFailureForTesting = false;
-                throw new InvalidOperationException("Forced failure after despawn (SentientMechConverter.ForceFailureForTesting).");
+                throw new InvalidOperationException("Forced failure after despawn and comp reconciliation (SentientMechConverter.ForceFailureForTesting).");
             }
 
-            pawn.def = sentientRace;
-            pawn.kindDef = sentientKind;
             pawn.verbTracker = new VerbTracker(pawn);
             pawn.meleeVerbs = new Pawn_MeleeVerbs(pawn);
             PawnComponentsUtility.CreateInitialComponents(pawn);
@@ -194,23 +196,64 @@ namespace Mechanoid_Sentience
             overseer.mechanitor?.Notify_BandwidthChanged();
         }
 
-        private static CompOverseerSubject RemoveOverseerComp(Pawn pawn, Map map)
+        private static void RemoveOverseerComp(Pawn pawn, Map map)
         {
-            var comps = CompsField.GetValue(pawn) as List<ThingComp>;
-            CompOverseerSubject overseerComp = comps?.OfType<CompOverseerSubject>().FirstOrDefault();
-            if (overseerComp != null)
+            if (CompsField.GetValue(pawn) is List<ThingComp> comps)
             {
-                overseerComp.PostDeSpawn(map);
-                comps.Remove(overseerComp);
-                RebuildCompIndex(pawn, comps);
+                CompOverseerSubject overseerComp = comps.OfType<CompOverseerSubject>().FirstOrDefault();
+                if (overseerComp != null)
+                {
+                    overseerComp.PostDeSpawn(map);
+                    SetComps(pawn, comps.Where(c => c != overseerComp).ToList());
+                }
             }
             OverseerSubjectField.SetValue(pawn, null);
-            return overseerComp;
         }
 
-        private static void RebuildCompIndex(Pawn pawn, List<ThingComp> comps)
+        private static void ReconcileComps(Pawn pawn, ThingDef sentientRace)
         {
-            CompsByTypeField.SetValue(pawn, comps.GroupBy(c => c.GetType()).ToDictionary(g => g.Key, g => g.ToArray()));
+            var live = CompsField.GetValue(pawn) as List<ThingComp>;
+            List<ThingComp> reconciled;
+            List<ThingComp> created;
+            try
+            {
+                reconciled = CompReconciler.Reconcile(live, sentientRace.comps, props => CreateComp(pawn, props), out created);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Could not bring the comps of " + pawn.ToStringSafe() + " in line with " + sentientRace.defName + ": " + ex.Message, ex);
+            }
+            SetComps(pawn, reconciled);
+            if (created.Count > 0)
+            {
+                Logger.Message("Added " + created.Count + " comp(s) to " + pawn.ToStringSafe() + ": " + created.Select(c => c.GetType().FullName).ToCommaList());
+            }
+        }
+
+        private static ThingComp CreateComp(Pawn pawn, CompProperties props)
+        {
+            var comp = (ThingComp)Activator.CreateInstance(props.compClass);
+            comp.parent = pawn;
+            comp.Initialize(props);
+            comp.PostPostMake();
+            return comp;
+        }
+
+        private static void SetComps(Pawn pawn, List<ThingComp> comps)
+        {
+            if (comps == null || comps.Count == 0)
+            {
+                CompsField.SetValue(pawn, null);
+                CompsByTypeField.SetValue(pawn, null);
+            }
+            else
+            {
+                CompsField.SetValue(pawn, comps);
+                CompsByTypeField.SetValue(pawn, comps.GroupBy(c => c.GetType()).ToDictionary(g => g.Key, g => g.ToArray()));
+            }
+            pawn.compStyleable = pawn.GetComp<CompStyleable>();
+            pawn.compForbiddable = pawn.GetComp<CompForbiddable>();
+            pawn.compQuality = pawn.GetComp<CompQuality>();
         }
 
         private static void ClearSleepSchedule(Pawn pawn)
@@ -253,10 +296,9 @@ namespace Mechanoid_Sentience
                         GenSpawn.Spawn(pawn, state.Cell, state.Map, state.Rotation, WipeMode.Vanish, respawningAfterLoad: false);
                     }
                 }
-                if (state.RemovedOverseerComp != null && CompsField.GetValue(pawn) is List<ThingComp> comps && !comps.Contains(state.RemovedOverseerComp))
+                else
                 {
-                    comps.Add(state.RemovedOverseerComp);
-                    RebuildCompIndex(pawn, comps);
+                    state.RestoreComps(pawn);
                 }
                 if (state.Faction != pawn.Faction)
                 {
@@ -287,7 +329,6 @@ namespace Mechanoid_Sentience
         private sealed class ConversionState
         {
             public ConversionStage Stage;
-            public CompOverseerSubject RemovedOverseerComp;
             public readonly Map Map;
             public readonly IntVec3 Cell;
             public readonly Rot4 Rotation;
@@ -314,6 +355,7 @@ namespace Mechanoid_Sentience
             private readonly VerbTracker verbTracker;
             private readonly Pawn_MeleeVerbs meleeVerbs;
             private readonly List<Need> needs;
+            private readonly List<ThingComp> comps;
 
             public ConversionState(Pawn pawn)
             {
@@ -342,12 +384,20 @@ namespace Mechanoid_Sentience
                 verbTracker = pawn.verbTracker;
                 meleeVerbs = pawn.meleeVerbs;
                 needs = pawn.needs != null ? new List<Need>(pawn.needs.AllNeeds) : null;
+                comps = CompsField.GetValue(pawn) is List<ThingComp> liveComps ? new List<ThingComp>(liveComps) : null;
+            }
+
+            public void RestoreComps(Pawn pawn)
+            {
+                SetComps(pawn, comps != null ? new List<ThingComp>(comps) : null);
+                OverseerSubjectField.SetValue(pawn, null);
             }
 
             public void Restore(Pawn pawn)
             {
                 pawn.def = def;
                 pawn.kindDef = kind;
+                RestoreComps(pawn);
                 pawn.Name = name;
                 pawn.skills = skills;
                 pawn.story = story;

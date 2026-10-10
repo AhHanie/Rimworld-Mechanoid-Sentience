@@ -8,8 +8,21 @@ namespace Mechanoid_Sentience
     [StaticConstructorOnStartup]
     public static class SentientMechStartupValidator
     {
+        private static bool validated;
+        private static int vefExtras;
+
         static SentientMechStartupValidator()
         {
+            LongEventHandler.ExecuteWhenFinished(Validate);
+        }
+
+        private static void Validate()
+        {
+            if (validated)
+            {
+                return;
+            }
+            validated = true;
             SentientMechRegistry.EnsureIndexTableCurrent();
             int checkedPairs = 0;
             foreach (ThingDef sentient in SentientMechRegistry.SentientRaces)
@@ -39,7 +52,7 @@ namespace Mechanoid_Sentience
                     Log.Error("[Mechanoid Sentience] " + sentientKind.defName + ": " + problem);
                 }
             }
-            Logger.Message("Validated " + checkedPairs + " sentient mechanoid race(s).");
+            Logger.Message("Validated " + checkedPairs + " sentient mechanoid race(s)" + (vefExtras > 0 ? " (" + vefExtras + " with the optional VEF ability comp)." : "."));
         }
 
         private static IEnumerable<string> RaceProblems(ThingDef original, ThingDef sentient)
@@ -82,10 +95,14 @@ namespace Mechanoid_Sentience
             {
                 yield return "still has the overseer subject comp";
             }
-            int expectedComps = (original.comps?.Count ?? 0) - (original.comps?.Count(c => c is CompProperties_OverseerSubject) ?? 0);
-            if ((sentient.comps?.Count ?? 0) != expectedComps)
+            string compDifference = CompListComparer.FirstDifference(original.comps, sentient.comps, out bool hasVefExtra);
+            if (compDifference != null)
             {
-                yield return "comp list differs from " + original.defName;
+                yield return "comp list differs from " + original.defName + ". " + compDifference;
+            }
+            else if (hasVefExtra)
+            {
+                vefExtras++;
             }
             foreach (CompProperties comp in sentient.comps ?? new List<CompProperties>())
             {

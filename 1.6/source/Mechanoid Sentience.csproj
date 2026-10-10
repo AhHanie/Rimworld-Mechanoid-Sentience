@@ -66,9 +66,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compatibility\RimHudEnergyRow.cs" />
+    <Compile Include="Conversion\CompReconciler.cs" />
     <Compile Include="Conversion\DebugActions.cs" />
     <Compile Include="Conversion\SentientMechConverter.cs" />
     <Compile Include="Conversion\SentientMechGenerator.cs" />
+    <Compile Include="Defs\CompListComparer.cs" />
     <Compile Include="Defs\DefCloner.cs" />
     <Compile Include="Defs\MS_JobDefOf.cs" />
     <Compile Include="Defs\MS_NeedDefOf.cs" />
