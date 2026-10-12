@@ -94,6 +94,8 @@
     <Compile Include="Patches\ApparelUtility_IsRequirementActive.cs" />
     <Compile Include="Patches\AutoUndrafter_ShouldAutoUndraft.cs" />
     <Compile Include="Patches\Building_MechCharger_IsCompatibleWithCharger.cs" />
+    <Compile Include="Patches\CompMechCarrier_CanSpawn.cs" />
+    <Compile Include="Patches\CompMechCarrier_CompGetGizmosExtra.cs" />
     <Compile Include="Patches\CompStatue_GetAllPossiblePawnsToSelectFrom.cs" />
     <Compile Include="Patches\CompUsable_CanBeUsedBy.cs" />
     <Compile Include="Patches\CompUseEffect_InstallImplant_BrainPart.cs" />

@@ -64,6 +64,20 @@ namespace Mechanoid_Sentience
             return SentientMechRegistry.IsSentient(pawn) || MechanitorUtility.EverControllable(pawn);
         }
 
+        public static bool IsCarrierPlayerControlled(Pawn pawn)
+        {
+            return pawn.IsColonyMechPlayerControlled || (pawn.IsColonyMech && SentientMechRegistry.IsSentient(pawn));
+        }
+
+        public static Pawn CarrierGizmoOverseer(Pawn pawn)
+        {
+            if (pawn.IsColonyMech && SentientMechRegistry.IsSentient(pawn))
+            {
+                return pawn;
+            }
+            return MechanitorUtility.GetOverseer(pawn);
+        }
+
         public static IEnumerable<CodeInstruction> ReplaceCalls(IEnumerable<CodeInstruction> instructions, MethodBase original, MethodInfo replacement, int expectedCount, string patchName)
         {
             int count = 0;
