@@ -2,6 +2,8 @@
 <LanguageData>
     <MechanoidSentience.LoadingLabel>Mechanoid Sentience Loading</MechanoidSentience.LoadingLabel>
     <MechanoidSentience.SettingsTitle>Mechanoid Sentience</MechanoidSentience.SettingsTitle>
+    <MechanoidSentience.EnableSpontaneousAwakening>Enable spontaneous awakening</MechanoidSentience.EnableSpontaneousAwakening>
+    <MechanoidSentience.EnableSpontaneousAwakeningTooltip>Allow a player mechanoid on a home map to awaken through a storyteller incident. Turning this off does not affect the catalyst or forced developer actions.</MechanoidSentience.EnableSpontaneousAwakeningTooltip>
     <MechanoidSentience.EnableDebugLogging>Enable debug logging</MechanoidSentience.EnableDebugLogging>
     <MechanoidSentience.EnableDebugLoggingTooltip>Write extra Mechanoid Sentience diagnostic messages to the game log. Useful when troubleshooting.</MechanoidSentience.EnableDebugLoggingTooltip>
 

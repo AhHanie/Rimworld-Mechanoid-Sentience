@@ -10,12 +10,12 @@ namespace Mechanoid_Sentience
 
         protected override bool CanFireNowSub(IncidentParms parms)
         {
-            return parms.target is Map map && AnyCandidate(map);
+            return !IsDisabledFor(parms) && parms.target is Map map && AnyCandidate(map);
         }
 
         protected override bool TryExecuteWorker(IncidentParms parms)
         {
-            if (!(parms.target is Map map))
+            if (IsDisabledFor(parms) || !(parms.target is Map map))
             {
                 return false;
             }
@@ -47,6 +47,11 @@ namespace Mechanoid_Sentience
                 parms: parms,
                 lookTargets: pawn);
             return true;
+        }
+
+        private static bool IsDisabledFor(IncidentParms parms)
+        {
+            return !parms.forced && !ModSettings.EnableSpontaneousAwakening;
         }
 
         private static bool AnyCandidate(Map map)
