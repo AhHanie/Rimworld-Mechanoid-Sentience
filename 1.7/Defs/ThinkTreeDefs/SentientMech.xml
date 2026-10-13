@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <ThinkTreeDef>
+    <defName>MS_SentientMech</defName>
+    <thinkRoot Class="ThinkNode_Priority">
+      <subNodes>
+
+        <li Class="ThinkNode_Subtree">
+          <treeDef>Downed</treeDef>
+        </li>
+
+        <li Class="ThinkNode_ConditionalDeactivated" MayRequire="Ludeon.RimWorld.Odyssey">
+          <subNodes>
+            <li Class="JobGiver_Deactivated" />
+          </subNodes>
+        </li>
+
+        <li Class="ThinkNode_ConditionalLowEnergy">
+          <subNodes>
+            <li Class="JobGiver_SelfShutdown" />
+          </subNodes>
+        </li>
+
+        <li Class="ThinkNode_Subtree">
+          <treeDef>BurningResponse</treeDef>
+        </li>
+        <li Class="ThinkNode_Subtree">
+          <treeDef>MentalStateCritical</treeDef>
+        </li>
+
+        <li Class="ThinkNode_ConditionalRecharging">
+          <subNodes>
+            <li Class="JobGiver_GetEnergy_Charger" />
+          </subNodes>
+        </li>
+
+        <li Class="ThinkNode_Subtree">
+          <treeDef>Abilities_Escape</treeDef>
+        </li>
+
+        <li Class="JobGiver_ReactToCloseMeleeThreat" />
+
+        <li Class="ThinkNode_Subtree">
+          <treeDef>MentalStateNonCritical</treeDef>
+        </li>
+
+        <li Class="ThinkNode_ConditionalMentalState">
+          <state>BerserkMechanoid</state>
+          <subNodes>
+            <li Class="ThinkNode_Priority">
+              <subNodes>
+                <li Class="JobGiver_Berserk" />
+                <li Class="JobGiver_WanderAnywhere">
+                  <maxDanger>Deadly</maxDanger>
+                </li>
+              </subNodes>
+            </li>
+          </subNodes>
+        </li>
+
+        <li Class="ThinkNode_Subtree">
+          <treeDef>RopedPawn</treeDef>
+        </li>
+
+        <li Class="ThinkNode_SubtreesByTag">
+          <insertTag>Humanlike_PostMentalState</insertTag>
+        </li>
+
+        <li Class="ThinkNode_QueuedJob" />
+
+        <li Class="ThinkNode_ConditionalColonist">
+          <subNodes>
+            <li Class="ThinkNode_Tagger">
+              <tagToGive>DraftedOrder</tagToGive>
+              <subNodes>
+                <li Class="JobGiver_MoveToStandable" />
+                <li Class="JobGiver_Orders" />
+              </subNodes>
+            </li>
+          </subNodes>
+        </li>
+
+        <li Class="ThinkNode_JoinVoluntarilyJoinableLord">
+          <dutyHook>HighPriority</dutyHook>
+          <subNodes>
+            <li Class="ThinkNode_Subtree">
+              <treeDef>LordDuty</treeDef>
+            </li>
+          </subNodes>
+        </li>
+
+        <li Class="ThinkNode_SubtreesByTag">
+          <insertTag>Humanlike_PostDuty</insertTag>
+        </li>
+
+        <li Class="ThinkNode_ConditionalColonist">
+          <subNodes>
+            <li Class="JobGiver_SeekAllowedArea" />
+
+            <li Class="JobGiver_SeekSafeTemperature" />
+
+            <li Class="JobGiver_DropUnusedInventory" />
+
+            <li Class="ThinkNode_Tagger">
+              <tagToGive>SatisfyingNeeds</tagToGive>
+              <subNodes>
+                <li Class="JobGiver_GetEnergy_Charger">
+                  <leaveJoinableLordIfIssuesJob>true</leaveJoinableLordIfIssuesJob>
+                </li>
+              </subNodes>
+            </li>
+
+            <li Class="JobGiver_Work">
+              <leaveJoinableLordIfIssuesJob>true</leaveJoinableLordIfIssuesJob>
+              <emergency>true</emergency>
+            </li>
+
+            <li Class="ThinkNode_JoinVoluntarilyJoinableLord">
+              <dutyHook>MediumPriority</dutyHook>
+              <subNodes>
+                <li Class="ThinkNode_Subtree">
+                  <treeDef>LordDuty</treeDef>
+                </li>
+              </subNodes>
+            </li>
+
+            <li Class="JobGiver_PickupDroppedWeapon">
+              <ignoreForbidden>true</ignoreForbidden>
+            </li>
+
+            <li Class="ThinkNode_Tagger">
+              <tagToGive>TakeForInventoryStock</tagToGive>
+              <subNodes>
+                <li Class="JobGiver_TakeForInventoryStock">
+                  <leaveJoinableLordIfIssuesJob>true</leaveJoinableLordIfIssuesJob>
+                </li>
+              </subNodes>
+            </li>
+
+            <li Class="ThinkNode_Tagger">
+              <tagToGive>UnloadingOwnInventory</tagToGive>
+              <subNodes>
+                <li Class="JobGiver_UnloadYourInventory" />
+              </subNodes>
+            </li>
+          </subNodes>
+        </li>
+
+        <li Class="ThinkNode_TraitBehaviors" />
+
+        <li Class="ThinkNode_SubtreesByTag">
+          <insertTag>Humanlike_PreMain</insertTag>
+        </li>
+
+        <li Class="ThinkNode_ConditionalColonist">
+          <subNodes>
+            <li Class="ThinkNode_Tagger">
+              <tagToGive>SatisfyingNeeds</tagToGive>
+              <subNodes>
+                <li Class="ThinkNode_PrioritySorter">
+                  <subNodes>
+                    <li Class="JobGiver_GetEnergy_Charger">
+                      <leaveJoinableLordIfIssuesJob>true</leaveJoinableLordIfIssuesJob>
+                    </li>
+                    <li Class="ThinkNode_Priority_GetJoy">
+                      <subNodes>
+                        <li Class="JobGiver_GetJoy" />
+                      </subNodes>
+                    </li>
+                    <li Class="JobGiver_Meditate" />
+                    <li Class="JobGiver_Reload" />
+                    <li Class="JobGiver_Work" />
+                  </subNodes>
+                </li>
+              </subNodes>
+            </li>
+          </subNodes>
+        </li>
+
+        <li Class="ThinkNode_SubtreesByTag">
+          <insertTag>Humanlike_PostMain</insertTag>
+        </li>
+
+        <li Class="ThinkNode_ConditionalColonist">
+          <subNodes>
+            <li Class="ThinkNode_Tagger">
+              <tagToGive>Idle</tagToGive>
+              <subNodes>
+                <li Class="ThinkNode_ConditionalNeedPercentageAbove">
+                  <need>Joy</need>
+                  <threshold>0.9</threshold>
+                  <invert>true</invert>
+                  <subNodes>
+                    <li Class="JobGiver_IdleJoy" />
+                  </subNodes>
+                </li>
+
+                <li Class="JobGiver_WanderColony">
+                  <maxDanger>None</maxDanger>
+                </li>
+              </subNodes>
+            </li>
+          </subNodes>
+        </li>
+
+        <li Class="ThinkNode_Tagger">
+          <tagToGive>Idle</tagToGive>
+          <subNodes>
+            <li Class="JobGiver_WanderAnywhere">
+              <maxDanger>Deadly</maxDanger>
+            </li>
+          </subNodes>
+        </li>
+
+        <li Class="JobGiver_IdleError" />
+      </subNodes>
+    </thinkRoot>
+  </ThinkTreeDef>
+
+  <ThinkTreeDef>
+    <defName>MS_SentientMechConstant</defName>
+    <thinkRoot Class="ThinkNode_Priority">
+      <subNodes>
+        <li Class="ThinkNode_Subtree">
+          <treeDef>Despawned</treeDef>
+        </li>
+
+        <li Class="ThinkNode_ConditionalCanDoConstantThinkTreeJobNow">
+          <subNodes>
+            <li Class="JobGiver_FleePotentialExplosion" />
+
+            <li Class="JobGiver_FindOxygen" />
+
+            <li Class="JobGiver_BoardOrLeaveGravship" />
+
+            <li Class="ThinkNode_Subtree">
+              <treeDef>JoinAutoJoinableCaravan</treeDef>
+            </li>
+
+            <li Class="JobGiver_ConfigurableHostilityResponse" />
+
+            <li Class="ThinkNode_ConditionalIsCrawling">
+              <subNodes>
+                <li Class="ThinkNode_ConditionalCanCrawl">
+                  <invert>true</invert>
+                  <subNodes>
+                    <li Class="JobGiver_IdleForever" />
+                  </subNodes>
+                </li>
+              </subNodes>
+            </li>
+
+            <li Class="ThinkNode_ConditionalHasAbility">
+              <ability>LongjumpMechLauncher</ability>
+              <subNodes>
+                <li Class="ThinkNode_ConditionalDoingJob">
+                  <jobDef>BeatFire</jobDef>
+                  <subNodes>
+                    <li Class="JobGiver_AIJumpToJobTarget">
+                      <ability>LongjumpMechLauncher</ability>
+                    </li>
+                  </subNodes>
+                </li>
+                <li Class="ThinkNode_ConditionalDoingJob">
+                  <jobDef>Rescue</jobDef>
+                  <subNodes>
+                    <li Class="JobGiver_AIJumpToJobRescueTarget">
+                      <ability>LongjumpMechLauncher</ability>
+                    </li>
+                    <li Class="JobGiver_AIJumpToJobRescueTarget">
+                      <ability>LongjumpMechLauncher</ability>
+                      <targetIndex>B</targetIndex>
+                    </li>
+                  </subNodes>
+                </li>
+              </subNodes>
+            </li>
+          </subNodes>
+        </li>
+
+        <li Class="ThinkNode_ConditionalCanDoLordJobNow">
+          <subNodes>
+            <li Class="ThinkNode_Subtree">
+              <treeDef>LordDutyConstant</treeDef>
+            </li>
+          </subNodes>
+        </li>
+      </subNodes>
+    </thinkRoot>
+  </ThinkTreeDef>
+
+</Defs>

@@ -399,3 +399,11 @@ FodyWeavers.xsd
 
 # Third-party assemblies copied for the offline patch tests (not ours to redistribute)
 tools/PatchTest/Assemblies/
+
+# .NET SDK build leftovers and baked asset packs (release-only, see deploy.js)
+*.deps.json
+Assets.zip
+Assets.zip.fingerprint
+
+# Local developer tooling (offline patch tests, game test runner, publish scripts)
+tools/

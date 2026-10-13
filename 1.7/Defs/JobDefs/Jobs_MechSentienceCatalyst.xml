@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <JobDef>
+    <defName>MS_ApplyMechSentienceCatalyst</defName>
+    <driverClass>Mechanoid_Sentience.JobDriver_ApplyMechSentienceCatalyst</driverClass>
+    <reportString>awakening TargetA with TargetB.</reportString>
+  </JobDef>
+
+</Defs>

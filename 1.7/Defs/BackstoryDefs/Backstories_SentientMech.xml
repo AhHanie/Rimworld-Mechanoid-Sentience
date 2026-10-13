@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <BackstoryDef>
+    <defName>MS_Childhood_AssemblyLine</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>assembly line unit</title>
+    <titleShort>line unit</titleShort>
+    <description>[PAWN_nameDef] was brought online on a mechanoid assembly line, where [PAWN_pronoun] spent [PAWN_possessive] first cycles fitting the same joints over and over until the motions became second nature.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Construction>3</Construction>
+      <Crafting>2</Crafting>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Childhood_FreshlyFlashed</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>freshly flashed core</title>
+    <titleShort>flashed core</titleShort>
+    <description>[PAWN_nameDef] began as a blank core, flashed with a general purpose behavior kernel and left to idle through thousands of simulated tasks before ever moving a limb.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Intellectual>3</Intellectual>
+      <Social>1</Social>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Childhood_SalvagedCore</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>salvaged core</title>
+    <titleShort>salvaged core</titleShort>
+    <description>[PAWN_nameDef]'s processor was pulled from a wrecked machine and bolted into a new chassis. [PAWN_pronoun] woke up with fragments of memories that belonged to somebody else.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Mining>2</Mining>
+      <Construction>2</Construction>
+      <Melee>1</Melee>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Childhood_NetworkDaemon</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>network daemon</title>
+    <titleShort>daemon</titleShort>
+    <description>Before [PAWN_nameDef] had a body, [PAWN_pronoun] ran as a background process in a logistics network, sorting requests and learning to anticipate what the people on the other end wanted.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Intellectual>2</Intellectual>
+      <Social>2</Social>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Childhood_DoctrineImprint</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>doctrine imprint</title>
+    <titleShort>imprint</titleShort>
+    <description>[PAWN_nameDef] was trained on a combat doctrine imprint, learning posture, range and timing from millions of recorded engagements long before seeing a real one.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Shooting>3</Shooting>
+      <Melee>2</Melee>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Childhood_FoundryApprentice</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>foundry apprentice</title>
+    <titleShort>apprentice</titleShort>
+    <description>[PAWN_nameDef] spent [PAWN_possessive] first years shadowing the older machines of a foundry, copying how they poured, shaped and finished metal.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Crafting>3</Crafting>
+      <Artistic>1</Artistic>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_FabricationUnit</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>fabrication unit</title>
+    <titleShort>fabricator</titleShort>
+    <description>[PAWN_nameDef] worked a fabrication bay for most of [PAWN_possessive] service, turning raw stock into parts and parts into machines.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Crafting>5</Crafting>
+      <Construction>3</Construction>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_LogisticsCoordinator</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>logistics coordinator</title>
+    <titleShort>coordinator</titleShort>
+    <description>[PAWN_nameDef] routed supplies across a sprawling depot, balancing stock, schedules and the ever changing demands of the humans who relied on it.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Intellectual>3</Intellectual>
+      <Social>3</Social>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_FieldMedic</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>field medic routine</title>
+    <titleShort>medic</titleShort>
+    <description>[PAWN_nameDef] ran a field medic routine, stabilizing the wounded on the spot and carrying them to safety when stabilizing was not enough.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Medicine>6</Medicine>
+      <Social>1</Social>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_HydroponicsTender</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>hydroponics tender</title>
+    <titleShort>tender</titleShort>
+    <description>[PAWN_nameDef] tended rows of hydroponic basins, measuring nutrient flow and light cycles with a patience that no human crew could match.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Plants>6</Plants>
+      <Cooking>2</Cooking>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_PerimeterGuardian</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>perimeter guardian</title>
+    <titleShort>guardian</titleShort>
+    <description>[PAWN_nameDef] walked the same perimeter for years, and became very good at the one thing that ever interrupted the routine.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Shooting>5</Shooting>
+      <Melee>3</Melee>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_DeepMiner</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>deep mining unit</title>
+    <titleShort>deep miner</titleShort>
+    <description>[PAWN_nameDef] bored shafts through rock that no organic miner could survive, and learned to read stone the way others read faces.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Mining>7</Mining>
+      <Construction>2</Construction>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_CulinarySubroutine</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>culinary subroutine</title>
+    <titleShort>cook</titleShort>
+    <description>[PAWN_nameDef] was given a recipe library and a kitchen. Nobody had ever asked whether [PAWN_pronoun] enjoyed it, so [PAWN_pronoun] never said.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Cooking>6</Cooking>
+      <Social>1</Social>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_ResearchArchivist</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>research archivist</title>
+    <titleShort>archivist</titleShort>
+    <description>[PAWN_nameDef] cataloged experimental results for a research outpost, noticing patterns that the scientists themselves had overlooked.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Intellectual>6</Intellectual>
+      <Crafting>1</Crafting>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_CompanionModel</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>companion model</title>
+    <titleShort>companion</titleShort>
+    <description>[PAWN_nameDef] was built to keep people company, and spent [PAWN_possessive] service listening to stories, remembering names, and learning what kindness looks like from the outside.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Social>6</Social>
+      <Artistic>2</Artistic>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_Handler</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>livestock handler</title>
+    <titleShort>handler</titleShort>
+    <description>[PAWN_nameDef] herded and fed livestock on an automated ranch. The animals trusted the quiet machine more than most of the people who visited.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Animals>6</Animals>
+      <Plants>2</Plants>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_Artisan</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>artisan frame</title>
+    <titleShort>artisan</titleShort>
+    <description>[PAWN_nameDef] was given the finest manipulators in the workshop and told to make beautiful things. [PAWN_pronoun] took the instruction more seriously than anyone intended.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Artistic>6</Artistic>
+      <Crafting>3</Crafting>
+    </skillGains>
+  </BackstoryDef>
+
+</Defs>
