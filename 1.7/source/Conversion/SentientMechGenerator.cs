@@ -50,8 +50,14 @@ namespace Mechanoid_Sentience
             ApplyAppearanceDefaults(pawn);
             GiveBackstories(pawn);
             GiveName(pawn);
-            GiveTraits(pawn);
-            GiveSkillsAndPassions(pawn);
+            List<SpecialtySkill> specialty = SentientMechSpecialty.Resolve(pawn);
+            GiveTraits(pawn, specialty);
+            GiveSkillsAndPassions(pawn, specialty);
+        }
+
+        public static void RegenerateSkills(Pawn pawn)
+        {
+            GiveSkillsAndPassions(pawn, SentientMechSpecialty.Resolve(pawn));
         }
 
         private static void ApplyAppearanceDefaults(Pawn pawn)
@@ -114,7 +120,7 @@ namespace Mechanoid_Sentience
             pawn.Name = name;
         }
 
-        private static void GiveTraits(Pawn pawn)
+        private static void GiveTraits(Pawn pawn, List<SpecialtySkill> specialty)
         {
             TraitSet traits = pawn.story.traits;
             foreach (BackstoryDef backstory in pawn.story.AllBackstories)
@@ -136,18 +142,25 @@ namespace Mechanoid_Sentience
             for (int attempt = 0; attempt < MaxTraitAttempts && traits.allTraits.Count < target; attempt++)
             {
                 Trait candidate = PawnGenerator.GenerateTraitsFor(pawn, 1).FirstOrDefault();
-                if (candidate != null && IsTraitAllowed(candidate))
+                if (candidate != null && IsTraitAllowed(candidate, specialty))
                 {
                     traits.GainTrait(candidate);
                 }
             }
         }
 
-        private static bool IsTraitAllowed(Trait trait)
+        private static bool IsTraitAllowed(Trait trait, List<SpecialtySkill> specialty)
         {
             if (ExcludedTraitDefNames.Contains(trait.def.defName))
             {
                 return false;
+            }
+            foreach (SpecialtySkill skill in specialty)
+            {
+                if (trait.def.ConflictsWithPassion(skill.Skill))
+                {
+                    return false;
+                }
             }
             if (trait.def.defName == "PsychicSensitivity" && trait.Degree <= -2)
             {
@@ -156,11 +169,14 @@ namespace Mechanoid_Sentience
             return trait.GetDisabledWorkTypes().Count == 0 && trait.def.disabledWorkTags == WorkTags.None;
         }
 
-        private static void GiveSkillsAndPassions(Pawn pawn)
+        private static void GiveSkillsAndPassions(Pawn pawn, List<SpecialtySkill> specialty)
         {
             foreach (SkillDef skillDef in DefDatabase<SkillDef>.AllDefsListForReading)
             {
-                pawn.skills.GetSkill(skillDef).Level = Mathf.Clamp(FinalLevelOfSkill(pawn, skillDef), 0, 20);
+                SkillRecord record = pawn.skills.GetSkill(skillDef);
+                record.passion = Passion.None;
+                int specialtyIndex = specialty.FindIndex(s => s.Skill == skillDef);
+                record.Level = specialtyIndex >= 0 ? specialty[specialtyIndex].Level : Mathf.Clamp(FinalLevelOfSkill(pawn, skillDef), 0, 20);
             }
 
             int minorPassions = 0;
@@ -209,9 +225,36 @@ namespace Mechanoid_Sentience
                 }
             }
 
+            void Pay(Passion passion)
+            {
+                if (passion == Passion.Major && majorPassions > 0)
+                {
+                    majorPassions--;
+                }
+                else if (minorPassions > 0)
+                {
+                    minorPassions--;
+                }
+                else if (majorPassions > 0)
+                {
+                    majorPassions--;
+                }
+            }
+
+            foreach (SpecialtySkill special in specialty)
+            {
+                SkillRecord skill = pawn.skills.GetSkill(special.Skill);
+                if (skill.TotallyDisabled || skill.passion != Passion.None || ConflictsWithPassion(pawn, skill.def))
+                {
+                    continue;
+                }
+                skill.passion = special.Primary ? Passion.Major : Passion.Minor;
+                Pay(skill.passion);
+            }
+
             foreach (SkillRecord skill in pawn.skills.skills.OrderByDescending(s => s.GetLevel(includeAptitudes: false)))
             {
-                if (skill.TotallyDisabled)
+                if (skill.TotallyDisabled || skill.passion != Passion.None)
                 {
                     continue;
                 }
@@ -229,6 +272,18 @@ namespace Mechanoid_Sentience
                     CreatePassion(skill, force: false);
                 }
             }
+        }
+
+        private static bool ConflictsWithPassion(Pawn pawn, SkillDef skill)
+        {
+            foreach (Trait trait in pawn.story.traits.allTraits)
+            {
+                if (trait.def.ConflictsWithPassion(skill))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static int FinalLevelOfSkill(Pawn pawn, SkillDef skill)

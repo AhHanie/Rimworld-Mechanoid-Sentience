@@ -180,6 +180,8 @@ namespace Mechanoid_Sentience
             clone.fixedAdultBackstories = new List<BackstoryDef>();
             clone.preventIdeo = false;
 
+            clone.destroyGearOnDrop = false;
+
             AddExtension(clone, original.defName);
             return clone;
         }

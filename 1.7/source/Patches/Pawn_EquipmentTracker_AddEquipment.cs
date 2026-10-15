@@ -10,20 +10,36 @@ namespace Mechanoid_Sentience
         [HarmonyPrefix]
         public static bool Prefix(Pawn ___pawn, ThingWithComps newEq)
         {
-            if (!SentientMechRegistry.IsSentient(___pawn) || newEq.def.IsWeapon)
+            if (!SentientMechRegistry.IsSentient(___pawn))
             {
                 return true;
             }
-            Logger.Warning(___pawn + " is a sentient mechanoid and cannot equip the non-weapon " + newEq);
-            if (___pawn.MapHeld != null)
+            if (!newEq.def.IsWeapon)
             {
-                GenPlace.TryPlaceThing(newEq, ___pawn.PositionHeld, ___pawn.MapHeld, ThingPlaceMode.Near);
+                Logger.Warning(___pawn + " is a sentient mechanoid and cannot equip the non-weapon " + newEq);
+                PutBack(___pawn, newEq);
+                return false;
+            }
+            ThingWithComps locked = SentientMechUtility.LockedPrimary(___pawn);
+            if (locked == null || locked == newEq || newEq.def.equipmentType != EquipmentType.Primary)
+            {
+                return true;
+            }
+            Logger.Warning(___pawn + " has the built-in weapon " + locked + " and cannot equip " + newEq);
+            PutBack(___pawn, newEq);
+            return false;
+        }
+
+        private static void PutBack(Pawn pawn, ThingWithComps thing)
+        {
+            if (pawn.MapHeld != null)
+            {
+                GenPlace.TryPlaceThing(thing, pawn.PositionHeld, pawn.MapHeld, ThingPlaceMode.Near);
             }
             else
             {
-                ___pawn.inventory.innerContainer.TryAdd(newEq);
+                pawn.inventory.innerContainer.TryAdd(thing);
             }
-            return false;
         }
     }
 }

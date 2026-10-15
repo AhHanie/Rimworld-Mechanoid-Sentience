@@ -28,5 +28,7 @@
     <MechanoidSentience.CatalystCannotStart>{0} cannot carry the catalyst to {1} right now.</MechanoidSentience.CatalystCannotStart>
 
     <MechanoidSentience.CannotEquipNonWeapon>Sentient mechanoids can only carry a weapon.</MechanoidSentience.CannotEquipNonWeapon>
+    <MechanoidSentience.CannotSwapIntegratedWeapon>{0} is built into {1}'s chassis and cannot be swapped out.</MechanoidSentience.CannotSwapIntegratedWeapon>
+    <MechanoidSentience.CannotDropIntegratedWeapon>{0} is built into {1}'s chassis and cannot be dropped.</MechanoidSentience.CannotDropIntegratedWeapon>
     <MechanoidSentience.CannotWearApparel>cannot wear apparel</MechanoidSentience.CannotWearApparel>
 </LanguageData>

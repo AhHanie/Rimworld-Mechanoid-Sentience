@@ -5,6 +5,7 @@ using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.AI;
 
 namespace Mechanoid_Sentience
 {
@@ -24,6 +25,8 @@ namespace Mechanoid_Sentience
         private static string snapshot;
         private static Game gameBeforeLoad;
         private static int runStartTick;
+        private static int downedMechId;
+        private static int downedWeaponId;
 
         public MechSentienceAutoTest(Game game)
         {
@@ -117,6 +120,8 @@ namespace Mechanoid_Sentience
                     {
                         Pawn pawn = FindSentient();
                         Check(pawn != null && pawn.thingIDNumber == sentientThingId, "same pawn (ThingID " + sentientThingId + ") after reload");
+                        Pawn downedMech = Find.CurrentMap.mapPawns.AllPawnsSpawned.FirstOrDefault(p => p.thingIDNumber == downedMechId);
+                        Check(downedMech != null && downedMech.Downed && downedMech.equipment?.Primary != null && downedMech.equipment.Primary.thingIDNumber == downedWeaponId, "downed lancer still has the same weapon after save and load");
                         if (pawn != null)
                         {
                             string after = Snapshot(pawn);
@@ -197,6 +202,106 @@ namespace Mechanoid_Sentience
             bool fired = DefDatabase<IncidentDef>.GetNamed("MS_MechanoidAwakening").Worker.TryExecute(parms);
             Check(fired && SentientCount(map) == before + 1, "awakening incident converted one more mech (" + before + " -> " + SentientCount(map) + ")");
             GC.KeepAlive(spare);
+
+            CheckSpecialtySkills(Spawn);
+            CheckWeaponLock(Spawn);
+        }
+
+        private static void CheckSpecialtySkills(Func<string, Pawn> spawn)
+        {
+            var cases = new (string kind, string[] skills)[]
+            {
+                ("Mech_Tunneler", new[] { "Mining" }),
+                ("Mech_Constructoid", new[] { "Construction" }),
+                ("Mech_Agrihand", new[] { "Plants" }),
+                ("Mech_Fabricor", new[] { "Crafting", "Cooking", "Intellectual" }),
+                ("Mech_Paramedic", new[] { "Medicine" }),
+                ("Mech_Lancer", new[] { "Shooting" }),
+                ("Mech_Diabolus", new[] { "Shooting" }),
+                ("Mech_Warqueen", new[] { "Shooting" }),
+                ("Mech_Scyther", new[] { "Melee" }),
+            };
+            foreach (var (kind, skills) in cases)
+            {
+                Pawn mech = spawn(kind);
+                if (!SentientMechConverter.TryConvert(mech, showMessages: false))
+                {
+                    Fail(kind + " did not convert");
+                    continue;
+                }
+                bool allOk = true;
+                int differentOthers = 0;
+                string previous = null;
+                for (int roll = 0; roll < 20; roll++)
+                {
+                    SentientMechGenerator.RegenerateSkills(mech);
+                    foreach (string skillName in skills)
+                    {
+                        SkillRecord record = mech.skills.GetSkill(DefDatabase<SkillDef>.GetNamed(skillName));
+                        allOk &= record.Level == 10 && record.passion != Passion.None;
+                    }
+                    allOk &= mech.skills.GetSkill(DefDatabase<SkillDef>.GetNamed(skills[0])).passion == Passion.Major;
+                    string others = string.Join(",", mech.skills.skills.Where(s => !skills.Contains(s.def.defName)).Select(s => s.Level + "" + s.passion));
+                    if (others != previous)
+                    {
+                        differentOthers++;
+                    }
+                    previous = others;
+                }
+                Check(allOk, kind + ": " + string.Join("+", skills) + " is 10 with a passion on 20 rerolls (primary Major)");
+                Check(differentOthers > 1, kind + ": the other skills still vary between rerolls");
+            }
+        }
+
+        private static void CheckWeaponLock(Func<string, Pawn> spawn)
+        {
+            ThingDef pistolDef = DefDatabase<ThingDef>.GetNamed("Gun_Autopistol");
+
+            Pawn diabolus = spawn("Mech_Diabolus");
+            ThingWithComps gun = diabolus.equipment?.Primary;
+            Check(gun != null && gun.def.destroyOnDrop, "diabolus carries a destroyOnDrop weapon (" + gun?.def.defName + ")");
+            Check(SentientMechConverter.TryConvert(diabolus, showMessages: false), "diabolus converted");
+            Check(!diabolus.kindDef.destroyGearOnDrop, "sentient kind no longer destroys gear on drop");
+            Check(SentientMechUtility.IsLockedWeapon(diabolus, gun), "its weapon is locked");
+
+            Check(!diabolus.equipment.TryDropEquipment(gun, out ThingWithComps dropped, diabolus.Position) && dropped == null && diabolus.equipment.Primary == gun, "TryDropEquipment is refused");
+            ThingWithComps pistol = (ThingWithComps)ThingMaker.MakeThing(pistolDef);
+            GenSpawn.Spawn(pistol, diabolus.Position, diabolus.Map);
+            Check(!EquipmentUtility.CanEquip(pistol, diabolus, out string reason) && !string.IsNullOrEmpty(reason), "CanEquip refuses another weapon: " + reason);
+            diabolus.equipment.MakeRoomFor(pistol);
+            Check(diabolus.equipment.Primary == gun, "MakeRoomFor keeps the weapon");
+            pistol.DeSpawn();
+            diabolus.equipment.AddEquipment(pistol);
+            Check(diabolus.equipment.Primary == gun && pistol.Spawned, "AddEquipment puts the other weapon back on the ground");
+            Job equipJob = JobMaker.MakeJob(JobDefOf.Equip, pistol);
+            diabolus.jobs.TryTakeOrderedJob(equipJob, JobTag.Misc);
+            Check(diabolus.CurJob?.def != JobDefOf.Equip, "an Equip job is not started");
+
+            Pawn lancer = spawn("Mech_Lancer");
+            ThingWithComps lancerGun = lancer.equipment?.Primary;
+            Check(SentientMechConverter.TryConvert(lancer, showMessages: false), "lancer converted");
+            Check(lancerGun != null && SentientMechUtility.IsLockedWeapon(lancer, lancerGun), "lancer's weapon is locked (" + lancerGun?.def.defName + ", destroyOnDrop=" + lancerGun?.def.destroyOnDrop + ")");
+            DownByRemovingLegs(lancer);
+            Check(lancer.Downed && !lancer.Dead, "lancer is downed");
+            Check(lancer.equipment.Primary == lancerGun && !lancerGun.Destroyed, "downed lancer keeps its weapon (same thing)");
+            downedMechId = lancer.thingIDNumber;
+            downedWeaponId = lancerGun.thingIDNumber;
+
+            Pawn lifter = spawn("Mech_Lifter");
+            Check(SentientMechConverter.TryConvert(lifter, showMessages: false), "lifter converted");
+            ThingWithComps rifle = (ThingWithComps)ThingMaker.MakeThing(pistolDef);
+            lifter.equipment.AddEquipment(rifle);
+            Check(lifter.equipment.Primary == rifle && !SentientMechUtility.IsLockedWeapon(lifter, rifle), "lifter holds a normal weapon that is not locked");
+            DownByRemovingLegs(lifter);
+            Check(lifter.Downed && lifter.equipment.Primary == null && !rifle.Destroyed && rifle.Spawned, "downed lifter drops its normal weapon without destroying it");
+        }
+
+        private static void DownByRemovingLegs(Pawn pawn)
+        {
+            foreach (BodyPartRecord part in pawn.RaceProps.body.GetPartsWithTag(BodyPartTagDefOf.MovingLimbCore).ToList())
+            {
+                pawn.health.AddHediff(HediffDefOf.MissingBodyPart, part);
+            }
         }
 
         private static bool WorkGiver_Scanner_Any(Pawn pawn)

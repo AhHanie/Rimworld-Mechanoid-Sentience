@@ -64,6 +64,47 @@ namespace Mechanoid_Sentience
             return playerControlled || (pawn.IsColonyMech && SentientMechRegistry.IsSentient(pawn));
         }
 
+        public static bool IsLockedWeapon(Pawn pawn, Thing weapon)
+        {
+            if (weapon == null || pawn == null || pawn.Dead || !SentientMechRegistry.IsSentient(pawn))
+            {
+                return false;
+            }
+            return weapon.def.destroyOnDrop || SharesWeaponTag(pawn.kindDef.weaponTags, weapon.def.weaponTags);
+        }
+
+        private static bool SharesWeaponTag(List<string> kindTags, List<string> weaponTags)
+        {
+            if (kindTags == null || weaponTags == null)
+            {
+                return false;
+            }
+            for (int i = 0; i < weaponTags.Count; i++)
+            {
+                if (kindTags.Contains(weaponTags[i]))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public static ThingWithComps LockedPrimary(Pawn pawn)
+        {
+            ThingWithComps primary = pawn?.equipment?.Primary;
+            return IsLockedWeapon(pawn, primary) ? primary : null;
+        }
+
+        public static string CannotSwapReason(Pawn pawn, Thing weapon)
+        {
+            return "MechanoidSentience.CannotSwapIntegratedWeapon".Translate(weapon.LabelNoCount, pawn.LabelShort);
+        }
+
+        public static string CannotDropReason(Pawn pawn, Thing weapon)
+        {
+            return "MechanoidSentience.CannotDropIntegratedWeapon".Translate(weapon.LabelNoCount, pawn.LabelShort);
+        }
+
         public static Pawn CarrierGizmoOverseer(Pawn overseer, Pawn pawn)
         {
             if (pawn.IsColonyMech && SentientMechRegistry.IsSentient(pawn))

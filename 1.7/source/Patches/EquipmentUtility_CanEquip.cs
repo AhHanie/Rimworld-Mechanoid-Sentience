@@ -10,11 +10,26 @@ namespace Mechanoid_Sentience
         [HarmonyPostfix]
         public static void Postfix(Thing thing, Pawn pawn, ref string cantReason, ref bool __result)
         {
-            if (!__result || thing.def.IsWeapon || !SentientMechRegistry.IsSentient(pawn))
+            if (!__result || !SentientMechRegistry.IsSentient(pawn))
             {
                 return;
             }
-            cantReason = "MechanoidSentience.CannotEquipNonWeapon".Translate();
+            if (!thing.def.IsWeapon)
+            {
+                cantReason = "MechanoidSentience.CannotEquipNonWeapon".Translate();
+                __result = false;
+                return;
+            }
+            if (thing.def.equipmentType != EquipmentType.Primary)
+            {
+                return;
+            }
+            ThingWithComps locked = SentientMechUtility.LockedPrimary(pawn);
+            if (locked == null || locked == thing)
+            {
+                return;
+            }
+            cantReason = SentientMechUtility.CannotSwapReason(pawn, locked);
             __result = false;
         }
     }
