@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <MechanoidSentience.Scenario.Summary>Start with two sentient mechanoids and one human colonist. The mechanoids' type, name, backstories, traits, skills and passions can be rerolled on the character page.</MechanoidSentience.Scenario.Summary>
+    <MechanoidSentience.Scenario.FixedRoster>Two sentient mechanoids and one human (fixed)</MechanoidSentience.Scenario.FixedRoster>
+    <MechanoidSentience.Scenario.StartDialog>Two machines woke up long before the ship's crew did, and neither of them is anyone's servant.\n\nTogether with the last human aboard they escaped in the pods and landed on an unknown rimworld. The mechanoids do not eat or sleep, but they cannot run on nothing: build rechargers and a generator before their energy runs out.</MechanoidSentience.Scenario.StartDialog>
+    <MechanoidSentience.Scenario.RerollFailed>Could not create a new sentient mechanoid. The previous one was kept. See the log for details.</MechanoidSentience.Scenario.RerollFailed>
+    <MechanoidSentience.Scenario.Error.RosterSize>This scenario needs exactly {0} starting colonists.</MechanoidSentience.Scenario.Error.RosterSize>
+    <MechanoidSentience.Scenario.Error.Composition>This scenario needs exactly {0} sentient mechanoids and {1} human among the starting colonists.</MechanoidSentience.Scenario.Error.Composition>
+    <MechanoidSentience.Scenario.Error.NotAdult>{0} must be an adult.</MechanoidSentience.Scenario.Error.NotAdult>
+    <MechanoidSentience.Scenario.Error.NoMechTypes>No sentient mechanoid type is available for the Awakened Trio scenario.</MechanoidSentience.Scenario.Error.NoMechTypes>
+</LanguageData>

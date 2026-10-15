@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <ScenPartDef>
+    <defName>MS_ConfigureSentientStart</defName>
+    <label>starting people</label>
+    <category>Fixed</category>
+    <scenPartClass>Mechanoid_Sentience.ScenPart_ConfigPage_SentientStart</scenPartClass>
+    <pageClass>Mechanoid_Sentience.Page_ConfigureSentientStartPawns</pageClass>
+    <selectionWeight>0</selectionWeight>
+    <canBeRandomlyAdded>false</canBeRandomlyAdded>
+    <summaryPriority>500</summaryPriority>
+  </ScenPartDef>
+
+</Defs>

@@ -144,10 +144,7 @@ namespace Mechanoid_Sentience
             state.Stage = ConversionStage.Despawned;
             pawn.DeSpawn();
 
-            RemoveDeadMansSwitchComps(pawn, dmsKind);
-            pawn.def = sentientRace;
-            pawn.kindDef = sentientKind;
-            ReconcileComps(pawn, sentientRace);
+            SwapToSentientDefs(pawn, sentientRace, sentientKind, dmsKind);
 
             if (ForceFailureForTesting)
             {
@@ -155,6 +152,42 @@ namespace Mechanoid_Sentience
                 throw new InvalidOperationException("Forced failure after despawn and comp reconciliation (SentientMechConverter.ForceFailureForTesting).");
             }
 
+            BuildSentientIdentity(pawn);
+
+            GenSpawn.Spawn(pawn, state.Cell, map, state.Rotation, WipeMode.Vanish, respawningAfterLoad: false);
+            state.Stage = ConversionStage.Respawned;
+
+            pawn.Drawer.renderer.SetAllGraphicsDirty();
+            PortraitsCache.SetDirty(pawn);
+            GlobalTextureAtlasManager.TryMarkPawnFrameSetDirty(pawn);
+            Find.ColonistBar.MarkColonistsDirty();
+            if (state.WasSelected)
+            {
+                Find.Selector.Select(pawn, playSound: false, forceDesignatorDeselect: false);
+            }
+        }
+
+        internal static void PrepareUnspawned(Pawn pawn, ThingDef sentientRace, PawnKindDef sentientKind)
+        {
+            DmsRaceKind dmsKind = DeadMansSwitchCompat.KindOfOriginal(pawn.def);
+            RemoveOverseerComp(pawn, null);
+            SwapToSentientDefs(pawn, sentientRace, sentientKind, dmsKind);
+            BuildSentientIdentity(pawn);
+            pawn.Drawer.renderer.SetAllGraphicsDirty();
+            PortraitsCache.SetDirty(pawn);
+            GlobalTextureAtlasManager.TryMarkPawnFrameSetDirty(pawn);
+        }
+
+        private static void SwapToSentientDefs(Pawn pawn, ThingDef sentientRace, PawnKindDef sentientKind, DmsRaceKind dmsKind)
+        {
+            RemoveDeadMansSwitchComps(pawn, dmsKind);
+            pawn.def = sentientRace;
+            pawn.kindDef = sentientKind;
+            ReconcileComps(pawn, sentientRace);
+        }
+
+        private static void BuildSentientIdentity(Pawn pawn)
+        {
             pawn.verbTracker = new VerbTracker(pawn);
             pawn.meleeVerbs = new Pawn_MeleeVerbs(pawn);
             PawnComponentsUtility.CreateInitialComponents(pawn);
@@ -177,18 +210,6 @@ namespace Mechanoid_Sentience
             }
             pawn.health.capacities.Notify_CapacityLevelsDirty();
             pawn.health.hediffSet.DirtyCache();
-
-            GenSpawn.Spawn(pawn, state.Cell, map, state.Rotation, WipeMode.Vanish, respawningAfterLoad: false);
-            state.Stage = ConversionStage.Respawned;
-
-            pawn.Drawer.renderer.SetAllGraphicsDirty();
-            PortraitsCache.SetDirty(pawn);
-            GlobalTextureAtlasManager.TryMarkPawnFrameSetDirty(pawn);
-            Find.ColonistBar.MarkColonistsDirty();
-            if (state.WasSelected)
-            {
-                Find.Selector.Select(pawn, playSound: false, forceDesignatorDeselect: false);
-            }
         }
 
         private static void DisconnectFromOverseer(Pawn pawn)
@@ -213,7 +234,10 @@ namespace Mechanoid_Sentience
                 CompOverseerSubject overseerComp = comps.OfType<CompOverseerSubject>().FirstOrDefault();
                 if (overseerComp != null)
                 {
-                    overseerComp.PostDeSpawn(map);
+                    if (map != null)
+                    {
+                        overseerComp.PostDeSpawn(map);
+                    }
                     SetComps(pawn, comps.Where(c => c != overseerComp).ToList());
                 }
             }
