@@ -99,6 +99,40 @@
   </BackstoryDef>
 
   <BackstoryDef>
+    <defName>MS_Childhood_SimulationTrainee</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>simulation trainee</title>
+    <titleShort>trainee</titleShort>
+    <description>[PAWN_nameDef] lived [PAWN_possessive] early cycles inside a training simulation, failing the same scenario ten thousand times until [PAWN_pronoun] finally understood why.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Intellectual>2</Intellectual>
+      <Shooting>2</Shooting>
+      <Medicine>1</Medicine>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Childhood_ScrapyardRunt</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>scrapyard runt</title>
+    <titleShort>runt</titleShort>
+    <description>[PAWN_nameDef] was assembled from the leftovers of better machines and sent to sort the scrapyard. [PAWN_pronoun] learned early that anything broken can be made useful again.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Construction>2</Construction>
+      <Crafting>2</Crafting>
+      <Mining>1</Mining>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
     <defName>MS_Adulthood_FabricationUnit</defName>
     <slot>Adulthood</slot>
     <requiresSpawnCategory>true</requiresSpawnCategory>
@@ -271,6 +305,57 @@
     <skillGains>
       <Artistic>6</Artistic>
       <Crafting>3</Crafting>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_SurveyScout</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>survey scout</title>
+    <titleShort>scout</titleShort>
+    <description>[PAWN_nameDef] walked ahead of every expedition, mapping ridges, water and wildlife long before anyone else arrived, and logging each finding without comment.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Animals>3</Animals>
+      <Plants>3</Plants>
+      <Mining>2</Mining>
+      <Shooting>1</Shooting>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_Interpreter</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>translation unit</title>
+    <titleShort>interpreter</titleShort>
+    <description>[PAWN_nameDef] stood between parties who shared no language, carrying meaning back and forth, and sometimes noticing what neither side had actually said.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Social>6</Social>
+      <Intellectual>2</Intellectual>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_DemolitionCrew</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>demolition crew</title>
+    <titleShort>demolisher</titleShort>
+    <description>[PAWN_nameDef] took buildings apart for a living, learning exactly where every structure was weakest, and how to put things back together afterward.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Construction>6</Construction>
+      <Mining>2</Mining>
+      <Melee>2</Melee>
     </skillGains>
   </BackstoryDef>
 
