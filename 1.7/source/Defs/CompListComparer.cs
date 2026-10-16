@@ -25,6 +25,9 @@ namespace Mechanoid_Sentience
         public bool IsVefAbilities => PropsType != null && CompClass != null
             && PropsType.FullName == CompListComparer.VefPropsTypeName && CompClass.FullName == CompListComparer.VefCompClassName;
 
+        public bool IsHospitalityGuest => PropsType != null && CompClass != null
+            && PropsType.FullName == CompListComparer.HospitalityPropsTypeName && CompClass.FullName == CompListComparer.HospitalityCompClassName;
+
         public bool Equals(CompSignature other)
         {
             return PropsType == other.PropsType && CompClass == other.CompClass;
@@ -54,6 +57,8 @@ namespace Mechanoid_Sentience
     {
         public const string VefPropsTypeName = "VEF.Apparels.CompProperties_ShieldBubble";
         public const string VefCompClassName = "VEF.Abilities.CompAbilities";
+        public const string HospitalityPropsTypeName = "Hospitality.CompProperties_Guest";
+        public const string HospitalityCompClassName = "Hospitality.CompGuest";
 
         public static string FirstDifference(IList<CompProperties> original, IList<CompProperties> sentient, out bool hasVefExtra)
         {
@@ -130,6 +135,7 @@ namespace Mechanoid_Sentience
                 return "Entry " + common + " is missing: expected " + expected[common] + ".";
             }
             int vefCount = 0;
+            int guestCount = 0;
             for (int i = expected.Count; i < actual.Count; i++)
             {
                 if (actual[i].IsVefAbilities)
@@ -138,6 +144,15 @@ namespace Mechanoid_Sentience
                     if (vefCount > 1)
                     {
                         return "Entry " + i + " is a duplicate of the VEF ability comp " + actual[i] + ".";
+                    }
+                    continue;
+                }
+                if (actual[i].IsHospitalityGuest)
+                {
+                    guestCount++;
+                    if (guestCount > 1)
+                    {
+                        return "Entry " + i + " is a duplicate of the Hospitality guest comp " + actual[i] + ".";
                     }
                     continue;
                 }
