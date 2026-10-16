@@ -102,10 +102,7 @@ namespace Mechanoid_Sentience
 
             clone.comps?.RemoveAll(c => c is CompProperties_OverseerSubject);
 
-            if (dmsKind == DmsRaceKind.Automatroid || dmsKind == DmsRaceKind.HumanlikeAutomatroid)
-            {
-                clone.comps?.RemoveAll(c => DeadMansSwitchCompat.IsRemovedFromSentient(dmsKind, CompSignature.Of(c)));
-            }
+            clone.comps?.RemoveAll(c => SentientCompRules.IsRemovedFromSentient(dmsKind, CompSignature.Of(c)));
             if (dmsKind == DmsRaceKind.HumanlikeAutomatroid)
             {
                 DeadMansSwitchCompat.EnsureCharacterTabs(clone);

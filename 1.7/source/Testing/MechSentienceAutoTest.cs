@@ -129,11 +129,15 @@ namespace Mechanoid_Sentience
                         Pawn pawn = FindSentient();
                         Check(pawn != null && pawn.thingIDNumber == sentientThingId, "same pawn (ThingID " + sentientThingId + ") after reload");
                         Pawn downedMech = Find.CurrentMap.mapPawns.AllPawnsSpawned.FirstOrDefault(p => p.thingIDNumber == downedMechId);
-                        Check(downedMech != null && downedMech.Downed && downedMech.equipment?.Primary != null && downedMech.equipment.Primary.thingIDNumber == downedWeaponId, "downed lancer still has the same weapon after save and load");
+                        Check(downedMech != null && downedMech.Downed && downedMech.equipment?.Primary != null && downedMech.equipment.Primary.thingIDNumber == downedWeaponId, "downed lancer still has the same weapon after save and load (found=" + (downedMech != null) + ", downed=" + downedMech?.Downed + ", dead=" + downedMech?.Dead + ", weapon=" + (downedMech?.equipment?.Primary?.ToStringSafe() ?? "none") + ", expected id " + downedWeaponId + ")");
                         if (pawn != null)
                         {
                             string after = Snapshot(pawn);
                             Check(after == snapshot, "identity unchanged by save and load" + (after == snapshot ? "" : ": " + after));
+                            if (WorkModesCompat.IsActive)
+                            {
+                                WorkModesAutoTest.CheckAfterLoad(pawn);
+                            }
                             Find.Selector.Select(pawn, playSound: false, forceDesignatorDeselect: false);
                             Find.CameraDriver.JumpToCurrentMapLoc(pawn.Position);
                         }
@@ -211,6 +215,11 @@ namespace Mechanoid_Sentience
             Check(fired && SentientCount(map) == before + 1, "awakening incident converted one more mech (" + before + " -> " + SentientCount(map) + ")");
             GC.KeepAlive(spare);
 
+            Log.Message("AUTOTEST info WVC - Work Modes active=" + WorkModesCompat.IsActive);
+            if (WorkModesCompat.IsActive)
+            {
+                WorkModesAutoTest.Run(Spawn);
+            }
             CheckSpecialtySkills(Spawn);
             CheckWeaponLock(Spawn);
             CheckSentientCorpseFilters();
@@ -383,6 +392,11 @@ namespace Mechanoid_Sentience
 
             Pawn lancer = spawn("Mech_Lancer");
             ThingWithComps lancerGun = lancer.equipment?.Primary;
+            CompMechRepairable repairable = lancer.GetComp<CompMechRepairable>();
+            if (repairable != null)
+            {
+                repairable.autoRepair = false;
+            }
             Check(SentientMechConverter.TryConvert(lancer, showMessages: false), "lancer converted");
             Check(lancerGun != null && SentientMechUtility.IsLockedWeapon(lancer, lancerGun), "lancer's weapon is locked (" + lancerGun?.def.defName + ", destroyOnDrop=" + lancerGun?.def.destroyOnDrop + ")");
             DownByRemovingLegs(lancer);

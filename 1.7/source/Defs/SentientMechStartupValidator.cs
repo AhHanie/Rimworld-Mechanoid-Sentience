@@ -115,7 +115,7 @@ namespace Mechanoid_Sentience
                 yield return "still has the overseer subject comp";
             }
             DmsRaceKind dmsKind = DeadMansSwitchCompat.KindOfSentient(sentient);
-            string compDifference = CompListComparer.FirstDifference(original.comps, sentient.comps, dmsKind == DmsRaceKind.None ? null : (Func<CompSignature, bool>)(s2 => DeadMansSwitchCompat.IsRemovedFromSentient(dmsKind, s2)), out bool hasVefExtra);
+            string compDifference = CompListComparer.FirstDifference(original.comps, sentient.comps, s2 => SentientCompRules.IsRemovedFromSentient(dmsKind, s2), out bool hasVefExtra);
             if (compDifference != null)
             {
                 yield return "comp list differs from " + original.defName + ". " + compDifference;
