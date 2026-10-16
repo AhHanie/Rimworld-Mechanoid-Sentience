@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <RecipeDef ParentName="ButcherCorpseMechanoidBase">
+    <defName>MS_ButcherCorpseSentientMech</defName>
+    <label>shred sentient mechanoid</label>
+    <description>Shred the body of a dead sentient mechanoid to salvage usable material. Sentient mechanoids are people: this counts as butchering a humanlike, with the same mood effects and reactions as butchering a human.</description>
+    <jobString>Shredding sentient mechanoid.</jobString>
+    <workAmount>300</workAmount>
+    <soundWorking>Recipe_ButcherCorpseMechanoid</soundWorking>
+    <fixedIngredientFilter Inherit="False">
+      <categories>
+        <li>MS_CorpsesSentientMech</li>
+      </categories>
+      <specialFiltersToAllow>
+        <li>AllowCorpsesColonist</li>
+        <li>AllowCorpsesStranger</li>
+        <li MayRequire="Ludeon.RimWorld.Ideology">AllowCorpsesSlave</li>
+      </specialFiltersToAllow>
+    </fixedIngredientFilter>
+    <defaultIngredientFilter Inherit="False">
+      <categories>
+        <li>MS_CorpsesSentientMech</li>
+      </categories>
+      <specialFiltersToAllow>
+        <li>AllowCorpsesColonist</li>
+        <li>AllowCorpsesStranger</li>
+        <li MayRequire="Ludeon.RimWorld.Ideology">AllowCorpsesSlave</li>
+      </specialFiltersToAllow>
+    </defaultIngredientFilter>
+  </RecipeDef>
+
+  <RecipeDef ParentName="ButcherCorpseMechanoidBase">
+    <defName>MS_SmashCorpseSentientMech</defName>
+    <label>smash sentient mechanoid</label>
+    <description>Smash the body of a dead sentient mechanoid with simple hand tools to salvage usable material. Sentient mechanoids are people: this counts as butchering a humanlike, with the same mood effects and reactions as butchering a human.</description>
+    <jobString>Smashing sentient mechanoid.</jobString>
+    <workAmount>450</workAmount>
+    <soundWorking>Recipe_SmashCorpseMechanoid</soundWorking>
+    <fixedIngredientFilter Inherit="False">
+      <categories>
+        <li>MS_CorpsesSentientMech</li>
+      </categories>
+      <specialFiltersToAllow>
+        <li>AllowCorpsesColonist</li>
+        <li>AllowCorpsesStranger</li>
+        <li MayRequire="Ludeon.RimWorld.Ideology">AllowCorpsesSlave</li>
+      </specialFiltersToAllow>
+    </fixedIngredientFilter>
+    <defaultIngredientFilter Inherit="False">
+      <categories>
+        <li>MS_CorpsesSentientMech</li>
+      </categories>
+      <specialFiltersToAllow>
+        <li>AllowCorpsesColonist</li>
+        <li>AllowCorpsesStranger</li>
+        <li MayRequire="Ludeon.RimWorld.Ideology">AllowCorpsesSlave</li>
+      </specialFiltersToAllow>
+    </defaultIngredientFilter>
+  </RecipeDef>
+</Defs>

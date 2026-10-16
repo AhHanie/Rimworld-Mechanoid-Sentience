@@ -12,6 +12,7 @@ namespace Mechanoid_Sentience
         private static bool validated;
         private static int vefExtras;
         private static int dmsRaces;
+        private static readonly HashSet<string> warnedMissingRecipes = new HashSet<string>();
 
         static SentientMechStartupValidator()
         {
@@ -102,6 +103,13 @@ namespace Mechanoid_Sentience
             {
                 yield return "no corpse def was generated";
             }
+            else
+            {
+                foreach (string problem in CorpseFilterProblems(s.corpseDef))
+                {
+                    yield return problem;
+                }
+            }
             if (sentient.GetCompProperties<CompProperties_OverseerSubject>() != null)
             {
                 yield return "still has the overseer subject comp";
@@ -130,6 +138,57 @@ namespace Mechanoid_Sentience
             if (sentient.GetModExtension<SentientMechExtension>()?.originalDefName != original.defName)
             {
                 yield return "original def extension is missing";
+            }
+        }
+
+        private static IEnumerable<string> CorpseFilterProblems(ThingDef corpse)
+        {
+            ThingCategoryDef category = DefDatabase<ThingCategoryDef>.GetNamedSilentFail(SentientCorpseCategories.CategoryName);
+            ThingCategoryDef humanlike = DefDatabase<ThingCategoryDef>.GetNamedSilentFail("CorpsesHumanlike");
+            if (category == null || !corpse.IsWithinCategory(category))
+            {
+                yield return "corpse is not in " + SentientCorpseCategories.CategoryName;
+            }
+            if (humanlike == null || !corpse.IsWithinCategory(humanlike))
+            {
+                yield return "corpse is no longer within the humanlike corpses category";
+            }
+            foreach (string vanillaName in new[] { "ButcherCorpseFlesh", "ButcherCorpseMechanoid", "SmashCorpseMechanoid" })
+            {
+                RecipeDef vanilla = DefDatabase<RecipeDef>.GetNamedSilentFail(vanillaName);
+                if (vanilla == null)
+                {
+                    WarnMissingRecipe(vanillaName);
+                }
+                else if (vanilla.fixedIngredientFilter.Allows(corpse))
+                {
+                    yield return "corpse is allowed by the vanilla recipe " + vanillaName;
+                }
+            }
+            foreach (string ownName in new[] { SentientCorpseCategories.ShredRecipeName, SentientCorpseCategories.SmashRecipeName })
+            {
+                RecipeDef own = DefDatabase<RecipeDef>.GetNamedSilentFail(ownName);
+                if (own == null)
+                {
+                    yield return "recipe " + ownName + " does not exist";
+                    continue;
+                }
+                if (!own.fixedIngredientFilter.Allows(corpse) || !own.defaultIngredientFilter.Allows(corpse))
+                {
+                    yield return "corpse is not selected by default in " + ownName;
+                }
+                if (own.AllRecipeUsers.EnumerableNullOrEmpty())
+                {
+                    yield return "recipe " + ownName + " is not on any work table";
+                }
+            }
+        }
+
+        private static void WarnMissingRecipe(string recipeName)
+        {
+            if (warnedMissingRecipes.Add(recipeName))
+            {
+                Log.Warning("[Mechanoid Sentience] Recipe " + recipeName + " does not exist, skipping the sentient corpse check for it.");
             }
         }
 

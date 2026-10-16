@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+  <Operation Class="PatchOperationAdd">
+    <xpath>/Defs/RecipeDef[defName="ButcherCorpseFlesh"]/fixedIngredientFilter/disallowedCategories</xpath>
+    <value>
+      <li>MS_CorpsesSentientMech</li>
+    </value>
+  </Operation>
+
+  <Operation Class="PatchOperationAdd">
+    <xpath>/Defs/ThingDef[defName="TableMachining"]/recipes</xpath>
+    <value>
+      <li>MS_ButcherCorpseSentientMech</li>
+    </value>
+  </Operation>
+  <Operation Class="PatchOperationAdd">
+    <xpath>/Defs/ThingDef[defName="CraftingSpot"]/recipes</xpath>
+    <value>
+      <li>MS_SmashCorpseSentientMech</li>
+    </value>
+  </Operation>
+</Patch>

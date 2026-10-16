@@ -15,5 +15,15 @@ namespace Mechanoid_Sentience
             }
             SentientDefGenerator.Generate();
         }
+
+        [HarmonyPostfix]
+        public static void Postfix(bool hotReload)
+        {
+            if (hotReload)
+            {
+                return;
+            }
+            SentientCorpseCategories.Apply();
+        }
     }
 }

@@ -205,6 +205,102 @@ namespace Mechanoid_Sentience
 
             CheckSpecialtySkills(Spawn);
             CheckWeaponLock(Spawn);
+            CheckSentientCorpseFilters();
+            CheckRealSentientCorpses(Spawn);
+        }
+
+        private static void CheckSentientCorpseFilters()
+        {
+            RecipeDef butcher = DefDatabase<RecipeDef>.GetNamed("ButcherCorpseFlesh");
+            RecipeDef shred = DefDatabase<RecipeDef>.GetNamed("ButcherCorpseMechanoid");
+            RecipeDef smash = DefDatabase<RecipeDef>.GetNamed("SmashCorpseMechanoid");
+            RecipeDef sentientShred = DefDatabase<RecipeDef>.GetNamed(SentientCorpseCategories.ShredRecipeName);
+            RecipeDef sentientSmash = DefDatabase<RecipeDef>.GetNamed(SentientCorpseCategories.SmashRecipeName);
+            RecipeDef cremate = DefDatabase<RecipeDef>.GetNamed("CremateCorpse");
+            ThingFilter graveFilter = DefDatabase<ThingDef>.GetNamed("Grave").building.fixedStorageSettings?.filter;
+            ThingCategoryDef sentientCategory = DefDatabase<ThingCategoryDef>.GetNamed(SentientCorpseCategories.CategoryName);
+            ThingCategoryDef humanlikeCategory = DefDatabase<ThingCategoryDef>.GetNamed("CorpsesHumanlike");
+            ThingDef vanillaCorpse = SentientMechRegistry.OriginalOf(SentientMechRegistry.SentientRaces[0]).race.corpseDef;
+
+            Check(!butcher.fixedIngredientFilter.Allows(vanillaCorpse), "vanilla mech corpse is not allowed by butcher creature");
+            Check(shred.fixedIngredientFilter.Allows(vanillaCorpse) && shred.defaultIngredientFilter.Allows(vanillaCorpse), "vanilla mech corpse: shred allows it, selected by default");
+            Check(smash.fixedIngredientFilter.Allows(vanillaCorpse) && smash.defaultIngredientFilter.Allows(vanillaCorpse), "vanilla mech corpse: smash allows it, selected by default");
+            Check(!sentientShred.fixedIngredientFilter.Allows(vanillaCorpse) && !sentientSmash.fixedIngredientFilter.Allows(vanillaCorpse), "vanilla mech corpse is not allowed by the sentient recipes");
+            Check(DefDatabase<ThingDef>.GetNamed("TableMachining").AllRecipes.Contains(sentientShred), "sentient shred is on the machining table");
+            Check(DefDatabase<ThingDef>.GetNamed("CraftingSpot").AllRecipes.Contains(sentientSmash), "sentient smash is on the crafting spot");
+
+            int checkedCorpses = 0;
+            foreach (ThingDef race in SentientMechRegistry.SentientRaces)
+            {
+                ThingDef corpse = race.race.corpseDef;
+                string name = corpse.defName;
+                checkedCorpses++;
+                Check(corpse.IsWithinCategory(sentientCategory) && corpse.IsWithinCategory(humanlikeCategory), name + " is in the sentient category and still within humanlike corpses");
+                Check(!butcher.fixedIngredientFilter.Allows(corpse), name + " is not allowed by butcher creature");
+                Check(!shred.fixedIngredientFilter.Allows(corpse) && !smash.fixedIngredientFilter.Allows(corpse), name + " is not allowed by the vanilla shred and smash recipes");
+                Check(sentientShred.fixedIngredientFilter.Allows(corpse) && sentientShred.defaultIngredientFilter.Allows(corpse), name + " is allowed and selected by default in " + sentientShred.defName);
+                Check(sentientSmash.fixedIngredientFilter.Allows(corpse) && sentientSmash.defaultIngredientFilter.Allows(corpse), name + " is allowed and selected by default in " + sentientSmash.defName);
+                Check(cremate.fixedIngredientFilter.Allows(corpse), name + " is still allowed by cremate corpse");
+                Check(graveFilter == null || graveFilter.Allows(corpse), name + " is still allowed in a grave");
+                Check(race.race.meatDef == ThingDefOf.Steel, name + " still yields steel when shredded");
+
+                Bill_Production butcherBill = (Bill_Production)butcher.MakeNewBill();
+                butcherBill.ingredientFilter.SetAllow(corpse, true);
+                Check(!butcherBill.IsFixedOrAllowedIngredient(corpse), name + " is rejected by a butcher creature bill even when ticked");
+            }
+            Check(checkedCorpses > 0, "checked " + checkedCorpses + " sentient corpse defs");
+        }
+
+        private static void CheckRealSentientCorpses(Func<string, Pawn> spawn)
+        {
+            RecipeDef shred = DefDatabase<RecipeDef>.GetNamed("ButcherCorpseMechanoid");
+            RecipeDef smash = DefDatabase<RecipeDef>.GetNamed("SmashCorpseMechanoid");
+            RecipeDef butcher = DefDatabase<RecipeDef>.GetNamed("ButcherCorpseFlesh");
+            RecipeDef cremate = DefDatabase<RecipeDef>.GetNamed("CremateCorpse");
+            RecipeDef[] sentientRecipes =
+            {
+                DefDatabase<RecipeDef>.GetNamed(SentientCorpseCategories.ShredRecipeName),
+                DefDatabase<RecipeDef>.GetNamed(SentientCorpseCategories.SmashRecipeName),
+            };
+            foreach (bool hostile in new[] { false, true })
+            {
+                string who = hostile ? "stranger" : "colonist";
+                Pawn mech = spawn("Mech_Militor");
+                if (!SentientMechConverter.TryConvert(mech, showMessages: false))
+                {
+                    Fail(who + " corpse test mech did not convert");
+                    continue;
+                }
+                if (hostile)
+                {
+                    mech.SetFaction(Faction.OfMechanoids);
+                }
+                mech.Kill(null);
+                Corpse corpse = mech.Corpse;
+                if (corpse == null)
+                {
+                    Fail(who + " corpse test: no corpse");
+                    continue;
+                }
+                Check(corpse.InnerPawn == mech && (corpse.InnerPawn.Faction == Faction.OfPlayer) != hostile, who + " sentient corpse has the expected faction");
+                foreach (RecipeDef recipe in sentientRecipes)
+                {
+                    Bill_Production bill = (Bill_Production)recipe.MakeNewBill();
+                    Check(recipe.fixedIngredientFilter.Allows(corpse), who + " corpse passes the fixed filter of " + recipe.defName);
+                    Check(bill.IsFixedOrAllowedIngredient(corpse), who + " corpse is accepted by a new " + recipe.defName + " bill");
+                    Check(bill.recipe.ingredients.Any(i => i.filter.Allows(corpse)), who + " corpse matches the recipe ingredient of " + recipe.defName);
+                }
+                foreach (RecipeDef recipe in new[] { shred, smash })
+                {
+                    Bill_Production bill = (Bill_Production)recipe.MakeNewBill();
+                    bill.ingredientFilter.SetAllow(corpse.def, true);
+                    Check(!recipe.fixedIngredientFilter.Allows(corpse) && !bill.IsFixedOrAllowedIngredient(corpse), who + " corpse is rejected by the vanilla " + recipe.defName);
+                }
+                Bill_Production butcherBill = (Bill_Production)butcher.MakeNewBill();
+                butcherBill.ingredientFilter.SetAllow(corpse.def, true);
+                Check(!butcherBill.IsFixedOrAllowedIngredient(corpse), who + " corpse is rejected by butcher creature");
+                Check(cremate.fixedIngredientFilter.Allows(corpse), who + " corpse still passes the cremate fixed filter");
+            }
         }
 
         private static void CheckSpecialtySkills(Func<string, Pawn> spawn)
