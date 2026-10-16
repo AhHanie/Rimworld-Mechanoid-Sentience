@@ -1,7 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using RimWorld;
+using Verse;
 
 namespace Mechanoid_Sentience
 {
@@ -11,7 +11,7 @@ namespace Mechanoid_Sentience
         [HarmonyPrepare]
         public static bool Prepare()
         {
-            return MechanoidUpgradesCompat.UpgraderTickInterval != null;
+            return MechanoidUpgradesCompat.UpgraderTickInterval != null && MechanoidUpgradesCompat.OverseerInfixesSafe;
         }
 
         [HarmonyTargetMethod]
@@ -20,27 +20,18 @@ namespace Mechanoid_Sentience
             return MechanoidUpgradesCompat.UpgraderTickInterval;
         }
 
-        [HarmonyTranspiler]
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        [HarmonyPostfix]
+        [HarmonyInfix(typeof(Pawn), nameof(Pawn.OverseerSubject), InnerTargetKind.Getter)]
+        public static CompOverseerSubject SubjectPostfix(CompOverseerSubject __result, Pawn __instance)
         {
-            List<CodeInstruction> code = instructions.ToList();
-            bool rewritten;
-            string failure;
-            try
-            {
-                rewritten = MechanoidUpgradesCompat.TryRewriteOverseerCheck(code, out failure);
-            }
-            catch (System.Exception e)
-            {
-                rewritten = false;
-                failure = e.GetType().Name + ": " + e.Message;
-            }
-            MechanoidUpgradesCompat.UpgraderTickPatched = rewritten;
-            if (!rewritten)
-            {
-                Verse.Log.Warning("[Mechanoid Sentience] The Mechanoid Upgrades upgrader could not be adapted (" + failure + ", " + code.Count + " instructions). Sentient mechanoids cannot be put into the upgrader until this mod is updated.");
-            }
-            return code;
+            return MechanoidUpgradesCompat.SubjectFor(__result, __instance);
+        }
+
+        [HarmonyPrefix]
+        [HarmonyInfix(typeof(CompOverseerSubject), nameof(CompOverseerSubject.State), InnerTargetKind.Getter)]
+        public static bool StatePrefix(CompOverseerSubject __instance, ref OverseerSubjectState __result)
+        {
+            return OverseerSubjectInfixes.AnswerState(__instance, ref __result);
         }
     }
 }

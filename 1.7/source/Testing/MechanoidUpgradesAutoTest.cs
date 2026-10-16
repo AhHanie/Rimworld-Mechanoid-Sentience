@@ -49,7 +49,7 @@ namespace Mechanoid_Sentience
                 yield break;
             }
             Check(MechanoidUpgradesCompat.IsAvailable && MechanoidUpgradesCompat.BindFailure == null, "the integration is available and every member bound (" + (MechanoidUpgradesCompat.BindFailure ?? "ok") + ")");
-            Check(MechanoidUpgradesCompat.UpgraderTickPatched, "the upgrader tick rewrite is in effect");
+            Check(MechanoidUpgradesCompat.OverseerInfixesSafe, "the upgrader's overseer reads can be answered for a sentient mech (infixes applied)");
 
             CheckThinkTree();
             CheckRaceMapping(utility);

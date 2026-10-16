@@ -23,11 +23,22 @@ namespace Mechanoid_Sentience
         private const string ScenPartName = "MU.ScenPart_Upgrades";
 
         private static bool? available;
+        private static bool? overseerInfixesSafe;
         private static Type upgradableCompType;
 
         public static string BindFailure { get; private set; }
 
-        public static bool UpgraderTickPatched { get; internal set; }
+        public static bool OverseerInfixesSafe
+        {
+            get
+            {
+                if (overseerInfixesSafe == null)
+                {
+                    overseerInfixesSafe = CheckOverseerInfixSites();
+                }
+                return overseerInfixesSafe.Value;
+            }
+        }
 
         public static bool IsAvailable
         {
@@ -125,160 +136,53 @@ namespace Mechanoid_Sentience
             return method;
         }
 
-        public static bool HasUpgradableComp(Pawn pawn)
+        private static readonly CompOverseerSubject SentientSubject = new CompOverseerSubject();
+
+        public static CompOverseerSubject SubjectFor(CompOverseerSubject subject, Pawn pawn)
         {
-            if (upgradableCompType == null)
-            {
-                return false;
-            }
-            List<ThingComp> comps = pawn.AllComps;
-            for (int i = 0; i < comps.Count; i++)
-            {
-                if (upgradableCompType.IsInstanceOfType(comps[i]))
-                {
-                    return true;
-                }
-            }
-            return false;
+            return SentientMechRegistry.IsSentient(pawn) ? SentientSubject : subject;
         }
 
-        public static AcceptanceReport CanAcceptSentient(Building_Enterable upgrader, Pawn pawn)
+        public static bool IsSentientSubject(CompOverseerSubject subject)
         {
-            if (!HasUpgradableComp(pawn) || !pawn.IsColonyMech)
-            {
-                return false;
-            }
-            if (upgrader.SelectedPawn != null && upgrader.SelectedPawn != pawn)
-            {
-                return false;
-            }
-            CompPowerTrader power = upgrader.GetComp<CompPowerTrader>();
-            if (power == null || !power.PowerOn)
-            {
-                return "CannotUseNoPower".Translate();
-            }
-            if (!UpgraderTickPatched)
-            {
-                return "MechanoidSentience.MuUpgrader.Unsupported".Translate();
-            }
-            return true;
+            return ReferenceEquals(subject, SentientSubject);
         }
 
-        public static bool OccupantLostOverseer(Pawn occupant)
+        public static int CountCalls(MethodBase method, Type declaringType, string name)
         {
-            if (SentientMechRegistry.IsSentient(occupant))
+            try
             {
-                return false;
+                return PatchProcessor.GetOriginalInstructions(method).Count(i => (i.opcode == OpCodes.Call || i.opcode == OpCodes.Callvirt)
+                    && i.operand is MethodInfo called && called.DeclaringType == declaringType && called.Name == name);
             }
-            CompOverseerSubject subject = occupant.OverseerSubject;
-            return subject == null || subject.State != OverseerSubjectState.Overseen;
+            catch (Exception)
+            {
+                return -1;
+            }
         }
 
-        private static readonly MethodInfo OccupantLostOverseerMethod = AccessTools.Method(typeof(MechanoidUpgradesCompat), nameof(OccupantLostOverseer));
-
-        public static bool TryRewriteOverseerCheck(List<CodeInstruction> code, out string failure)
+        private static bool CheckOverseerInfixSites()
         {
-            failure = null;
-            var meaningful = new List<int>(code.Count);
-            for (int i = 0; i < code.Count; i++)
+            var problems = new List<string>();
+            foreach (MethodBase method in new[] { upgraderCanAcceptPawn, upgraderTickInterval })
             {
-                if (code[i].opcode != OpCodes.Nop)
+                if (method == null)
                 {
-                    meaningful.Add(i);
+                    problems.Add("an upgrader method is missing");
+                    continue;
+                }
+                int subjects = CountCalls(method, typeof(Pawn), "get_OverseerSubject");
+                int states = CountCalls(method, typeof(CompOverseerSubject), "get_State");
+                if (subjects != 1 || states != 1)
+                {
+                    problems.Add(method.Name + " reads the overseer subject " + subjects + " and its state " + states + " times (expected 1 and 1)");
                 }
             }
-
-            int matchAt = -1;
-            for (int k = 0; k + 10 < meaningful.Count; k++)
+            if (problems.Count > 0)
             {
-                if (MatchesOverseerCheck(code, meaningful, k))
-                {
-                    if (matchAt >= 0)
-                    {
-                        failure = "the overseer check occurs more than once";
-                        return false;
-                    }
-                    matchAt = k;
-                }
+                Log.Warning("[Mechanoid Sentience] The Mechanoid Upgrades upgrader could not be adapted (" + string.Join("; ", problems) + "). Sentient mechanoids cannot be put into the upgrader until this mod is updated.");
             }
-            if (matchAt < 0)
-            {
-                failure = "the overseer check was not found";
-                return false;
-            }
-
-            int first = meaningful[matchAt];
-            int last = meaningful[matchAt + 10];
-            var interiorLabels = new HashSet<Label>();
-            for (int i = first + 1; i <= last; i++)
-            {
-                if (code[i].blocks.Count > 0)
-                {
-                    failure = "an exception block starts or ends inside the overseer check";
-                    return false;
-                }
-                foreach (Label label in code[i].labels)
-                {
-                    interiorLabels.Add(label);
-                }
-            }
-            if (interiorLabels.Count > 0)
-            {
-                for (int i = 0; i < code.Count; i++)
-                {
-                    if (i >= first && i <= last)
-                    {
-                        continue;
-                    }
-                    if (BranchesTo(code[i], interiorLabels))
-                    {
-                        failure = "a branch from outside jumps into the overseer check";
-                        return false;
-                    }
-                }
-            }
-
-            var replacement = new CodeInstruction(OpCodes.Call, OccupantLostOverseerMethod);
-            replacement.labels.AddRange(code[first].labels);
-            replacement.blocks.AddRange(code[first].blocks);
-            code.RemoveRange(first, last - first + 1);
-            code.Insert(first, replacement);
-            return true;
-        }
-
-        private static bool MatchesOverseerCheck(List<CodeInstruction> code, List<int> meaningful, int k)
-        {
-            CodeInstruction At(int offset) => code[meaningful[k + offset]];
-            return IsCallTo(At(0), typeof(Pawn), "get_OverseerSubject")
-                && At(1).opcode == OpCodes.Dup
-                && (At(2).opcode == OpCodes.Brtrue || At(2).opcode == OpCodes.Brtrue_S)
-                && At(3).opcode == OpCodes.Pop
-                && At(4).opcode == OpCodes.Ldc_I4_1
-                && (At(5).opcode == OpCodes.Br || At(5).opcode == OpCodes.Br_S)
-                && IsCallTo(At(6), typeof(CompOverseerSubject), "get_State")
-                && At(7).opcode == OpCodes.Ldc_I4_2
-                && At(8).opcode == OpCodes.Ceq
-                && At(9).opcode == OpCodes.Ldc_I4_0
-                && At(10).opcode == OpCodes.Ceq;
-        }
-
-        private static bool IsCallTo(CodeInstruction instruction, Type declaringType, string name)
-        {
-            return (instruction.opcode == OpCodes.Call || instruction.opcode == OpCodes.Callvirt)
-                && instruction.operand is MethodInfo method && method.DeclaringType == declaringType && method.Name == name;
-        }
-
-        private static bool BranchesTo(CodeInstruction instruction, HashSet<Label> labels)
-        {
-            if (instruction.operand is Label label)
-            {
-                return labels.Contains(label);
-            }
-            if (instruction.operand is Label[] targets)
-            {
-                return targets.Any(labels.Contains);
-            }
-            return false;
+            return problems.Count == 0;
         }
 
         public static ThingDef RestrictionRace(ThingDef race)
