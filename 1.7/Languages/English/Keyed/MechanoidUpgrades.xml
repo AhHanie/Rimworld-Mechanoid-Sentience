@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <MechanoidSentience.MuUpgrader.Unsupported>The installed Mechanoid Upgrades version is not supported for sentient mechanoids.</MechanoidSentience.MuUpgrader.Unsupported>
+    <MechanoidSentience.MuUpgrader.WaitingForPlayer>Waiting for upgrades to be configured.</MechanoidSentience.MuUpgrader.WaitingForPlayer>
+</LanguageData>

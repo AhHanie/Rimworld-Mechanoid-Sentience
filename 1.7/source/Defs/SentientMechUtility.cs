@@ -59,7 +59,7 @@ namespace Mechanoid_Sentience
             return everControllable || SentientMechRegistry.IsSentient(pawn);
         }
 
-        public static bool IsCarrierPlayerControlled(bool playerControlled, Pawn pawn)
+        public static bool IsPlayerControlledOrSentient(bool playerControlled, Pawn pawn)
         {
             return playerControlled || (pawn.IsColonyMech && SentientMechRegistry.IsSentient(pawn));
         }

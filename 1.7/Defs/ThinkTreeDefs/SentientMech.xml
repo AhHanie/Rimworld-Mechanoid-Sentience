@@ -111,6 +111,12 @@
               </subNodes>
             </li>
 
+            <li Class="MU.ThinkNode_ConditionalUpgradeNeedsReload" MayRequire="GoGaTio.MechanoidUpgrades">
+              <subNodes>
+                <li Class="MU.JobGiver_ReloadUpgrades" />
+              </subNodes>
+            </li>
+
             <li Class="JobGiver_Work">
               <leaveJoinableLordIfIssuesJob>true</leaveJoinableLordIfIssuesJob>
               <emergency>true</emergency>

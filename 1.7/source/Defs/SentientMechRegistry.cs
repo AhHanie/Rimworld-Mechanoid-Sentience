@@ -9,6 +9,7 @@ namespace Mechanoid_Sentience
         public const string DefPrefix = "MS_Sentient_";
 
         private static readonly Dictionary<ThingDef, ThingDef> raceToSentient = new Dictionary<ThingDef, ThingDef>();
+        private static readonly Dictionary<ThingDef, ThingDef> sentientToRace = new Dictionary<ThingDef, ThingDef>();
         private static readonly Dictionary<PawnKindDef, PawnKindDef> kindToSentient = new Dictionary<PawnKindDef, PawnKindDef>();
         private static readonly HashSet<ThingDef> sentientRaces = new HashSet<ThingDef>();
         private static readonly HashSet<RaceProperties> sentientRaceProps = new HashSet<RaceProperties>();
@@ -71,6 +72,11 @@ namespace Mechanoid_Sentience
             return originalName == null ? null : DefDatabase<T>.GetNamedSilentFail(originalName);
         }
 
+        public static ThingDef OriginalRaceOf(ThingDef sentientRace)
+        {
+            return sentientRace != null && sentientToRace.Count > 0 && sentientToRace.TryGetValue(sentientRace, out ThingDef original) ? original : null;
+        }
+
         internal static void Register(ThingDef original, ThingDef sentient)
         {
             if (frozen)
@@ -79,6 +85,7 @@ namespace Mechanoid_Sentience
                 return;
             }
             raceToSentient[original] = sentient;
+            sentientToRace[sentient] = original;
             sentientRaces.Add(sentient);
             sentientRaceProps.Add(sentient.race);
             sentientRaceList.Add(sentient);
@@ -149,6 +156,7 @@ namespace Mechanoid_Sentience
         {
             sentientRacesByIndex = null;
             raceToSentient.Clear();
+            sentientToRace.Clear();
             kindToSentient.Clear();
             sentientRaces.Clear();
             sentientRaceProps.Clear();

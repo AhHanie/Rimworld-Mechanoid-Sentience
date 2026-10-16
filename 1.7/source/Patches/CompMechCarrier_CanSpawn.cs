@@ -10,7 +10,7 @@ namespace Mechanoid_Sentience
         [HarmonyInfix(typeof(Pawn), nameof(Pawn.IsColonyMechPlayerControlled), InnerTargetKind.Getter)]
         public static bool Postfix(bool __result, Pawn __instance)
         {
-            return SentientMechUtility.IsCarrierPlayerControlled(__result, __instance);
+            return SentientMechUtility.IsPlayerControlledOrSentient(__result, __instance);
         }
     }
 }

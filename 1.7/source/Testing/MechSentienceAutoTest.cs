@@ -11,7 +11,7 @@ namespace Mechanoid_Sentience
 {
     public class MechSentienceAutoTest : GameComponent
     {
-        private enum Step { WaitForGame, ConvertAndRollback, Run, Screenshot, Save, WaitForLoad, VerifyAfterLoad, Done }
+        private enum Step { WaitForGame, ConvertAndRollback, Run, MechanoidUpgrades, Screenshot, Save, WaitForLoad, VerifyAfterLoad, Done }
 
         private const string SaveName = "mechsentienceautotest";
         private const int MaxFramesPerStep = 4000;
@@ -79,12 +79,20 @@ namespace Mechanoid_Sentience
                             Find.Selector.Select(pawn, playSound: false, forceDesignatorDeselect: false);
                             Find.CameraDriver.JumpToCurrentMapLoc(pawn.Position);
                             Find.TickManager.CurTimeSpeed = TimeSpeed.Paused;
-                            Next(Step.Screenshot);
+                            Next(MechanoidUpgradesCompat.IsAvailable ? Step.MechanoidUpgrades : Step.Screenshot);
                         }
                         else
                         {
                             Finish();
                         }
+                    }
+                    break;
+                case Step.MechanoidUpgrades:
+                    if (MechanoidUpgradesAutoTest.Tick())
+                    {
+                        Find.Selector.ClearSelection();
+                        Find.Selector.Select(FindSentient(), playSound: false, forceDesignatorDeselect: false);
+                        Next(Step.Screenshot);
                     }
                     break;
                 case Step.Screenshot:
@@ -441,7 +449,7 @@ namespace Mechanoid_Sentience
             });
         }
 
-        private static void Check(bool condition, string what)
+        internal static void Check(bool condition, string what)
         {
             if (!condition)
             {
@@ -450,7 +458,7 @@ namespace Mechanoid_Sentience
             Log.Message((condition ? "AUTOTEST PASS " : "AUTOTEST FAIL ") + what);
         }
 
-        private static void Fail(string what)
+        internal static void Fail(string what)
         {
             failures++;
             Log.Message("AUTOTEST FAIL " + what);
