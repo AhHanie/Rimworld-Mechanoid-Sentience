@@ -133,6 +133,18 @@
   </BackstoryDef>
 
   <BackstoryDef>
+    <defName>MS_Childhood_Unknown</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>unknown childhood</title>
+    <titleShort>unknown</titleShort>
+    <description>The records of [PAWN_nameDef]'s earliest cycles are gone. Nothing about where [PAWN_pronoun] was built or what [PAWN_pronoun] first learned can be recovered.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+  </BackstoryDef>
+
+  <BackstoryDef>
     <defName>MS_Adulthood_FabricationUnit</defName>
     <slot>Adulthood</slot>
     <requiresSpawnCategory>true</requiresSpawnCategory>
@@ -357,6 +369,18 @@
       <Mining>2</Mining>
       <Melee>2</Melee>
     </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_Unknown</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <title>unknown adulthood</title>
+    <titleShort>unknown</titleShort>
+    <description>[PAWN_nameDef]'s service history cannot be recovered. Whatever work [PAWN_pronoun] did before now left no record behind.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
   </BackstoryDef>
 
 </Defs>

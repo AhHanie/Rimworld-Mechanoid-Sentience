@@ -224,6 +224,78 @@ namespace Mechanoid_Sentience
             CheckWeaponLock(Spawn);
             CheckSentientCorpseFilters();
             CheckRealSentientCorpses(Spawn);
+            CheckDirectGeneration();
+            CheckUnknownBackstories(Spawn);
+        }
+
+        private static void CheckDirectGeneration()
+        {
+            Log.Message("AUTOTEST info Softer Hair Colors active=" + (ModLister.GetActiveModWithIdentifier("sinner.softerhaircolors", ignorePostfix: true) != null));
+            PawnKindDef original = DefDatabase<PawnKindDef>.GetNamed("Mech_Militor");
+            if (!SentientMechRegistry.TryGetSentient(original.race, original, out _, out PawnKindDef sentientKind))
+            {
+                Fail("no sentient kind for Mech_Militor");
+                return;
+            }
+            Pawn generated = null;
+            try
+            {
+                generated = PawnGenerator.GeneratePawn(new PawnGenerationRequest(sentientKind, Faction.OfPlayer, forceGenerateNewPawn: true));
+            }
+            catch (Exception e)
+            {
+                Fail("generating a sentient pawn kind threw " + e);
+            }
+            Check(generated != null && SentientMechRegistry.IsSentient(generated) && generated.genes == null, "directly generated sentient pawn is returned and stays gene-free");
+            Check(generated?.story?.Childhood != null && generated.story.Adulthood != null, "directly generated sentient pawn has both backstories");
+            if (generated != null)
+            {
+                Find.WorldPawns.PassToWorld(generated, RimWorld.Planet.PawnDiscardDecideMode.Discard);
+            }
+
+            Pawn human = PawnGenerator.GeneratePawn(new PawnGenerationRequest(PawnKindDefOf.Colonist, Faction.OfPlayer, forceGenerateNewPawn: true));
+            Check(human.genes != null, "ordinary human still gets a gene tracker");
+            Find.WorldPawns.PassToWorld(human, RimWorld.Planet.PawnDiscardDecideMode.Discard);
+        }
+
+        private static void CheckUnknownBackstories(Func<string, Pawn> spawn)
+        {
+            BackstoryDef childhood = DefDatabase<BackstoryDef>.GetNamedSilentFail("MS_Childhood_Unknown");
+            BackstoryDef adulthood = DefDatabase<BackstoryDef>.GetNamedSilentFail("MS_Adulthood_Unknown");
+            Check(childhood != null && adulthood != null, "both unknown backstories loaded");
+            if (childhood == null || adulthood == null)
+            {
+                return;
+            }
+            Check(childhood.slot == BackstorySlot.Childhood && adulthood.slot == BackstorySlot.Adulthood, "unknown backstories are in their own slots");
+            foreach (BackstoryDef backstory in new[] { childhood, adulthood })
+            {
+                Check(backstory.spawnCategories.Contains(SentientDefGenerator.BackstoryCategory) && backstory.requiresSpawnCategory, backstory.defName + " is sentient-only");
+                Check(backstory.skillGains.NullOrEmpty() && backstory.forcedTraits.NullOrEmpty() && backstory.disallowedTraits.NullOrEmpty() && backstory.workDisables == WorkTags.None && backstory.requiredWorkTags == WorkTags.None, backstory.defName + " grants no skills, traits or work restrictions");
+                Check(backstory.ConfigErrors().Count() == 0, backstory.defName + " has no config errors");
+            }
+
+            Pawn mech = spawn("Mech_Militor");
+            if (!SentientMechConverter.TryConvert(mech, showMessages: false))
+            {
+                Fail("unknown backstory test mech did not convert");
+                return;
+            }
+            mech.story.Childhood = childhood;
+            mech.story.Adulthood = adulthood;
+            SentientMechGenerator.RegenerateSkills(mech);
+            Check(mech.story.Childhood == childhood && mech.story.Adulthood == adulthood && mech.skills.skills.All(s => s.Level >= 0), "skills roll normally with both unknown backstories forced");
+
+            bool sawChildhood = false;
+            bool sawAdulthood = false;
+            for (int i = 0; i < 400 && !(sawChildhood && sawAdulthood); i++)
+            {
+                Pawn rolled = spawn("Mech_Militor");
+                SentientMechConverter.TryConvert(rolled, showMessages: false);
+                sawChildhood |= rolled.story?.Childhood == childhood;
+                sawAdulthood |= rolled.story?.Adulthood == adulthood;
+            }
+            Check(sawChildhood && sawAdulthood, "random rolls can pick both unknown backstories");
         }
 
         private static void CheckSentientCorpseFilters()
