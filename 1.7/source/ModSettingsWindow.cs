@@ -14,6 +14,10 @@ namespace Mechanoid_Sentience
                 ref ModSettings.EnableSpontaneousAwakening,
                 "MechanoidSentience.EnableSpontaneousAwakeningTooltip".Translate());
             listing.CheckboxLabeled(
+                "MechanoidSentience.UseCloseUpPortraits".Translate(),
+                ref ModSettings.UseCloseUpPortraits,
+                "MechanoidSentience.UseCloseUpPortraitsTooltip".Translate());
+            listing.CheckboxLabeled(
                 "MechanoidSentience.EnableDebugLogging".Translate(),
                 ref ModSettings.EnableDebugLogging,
                 "MechanoidSentience.EnableDebugLoggingTooltip".Translate());

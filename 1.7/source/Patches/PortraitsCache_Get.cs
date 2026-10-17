@@ -9,6 +9,8 @@ namespace Mechanoid_Sentience
     public static class PortraitsCache_Get
     {
         private const float Margin = 0.9f;
+        private const float CloseUpZoomMultiplier = 1.6f;
+        private const float CloseUpFocusHeight = 0.18f;
 
         [HarmonyPrefix]
         public static void Prefix(Pawn pawn, Vector2 size, ref Rot4 rotation, ref Vector3 cameraOffset, ref float cameraZoom)
@@ -17,7 +19,8 @@ namespace Mechanoid_Sentience
             {
                 return;
             }
-            if (rotation == Rot4.South)
+            bool closeUp = ModSettings.UseCloseUpPortraits && rotation == Rot4.South;
+            if (rotation == Rot4.South && !closeUp)
             {
                 rotation = Rot4.East;
             }
@@ -29,7 +32,11 @@ namespace Mechanoid_Sentience
                 visible = (ColonistBar.BaseSize.y - 2f) / (size.y - 2f);
             }
             cameraZoom = Margin * 2f * Mathf.Min(visible, aspect) / drawSize;
-            cameraOffset = new Vector3(0f, 0f, (1f - visible) / cameraZoom);
+            if (closeUp)
+            {
+                cameraZoom *= CloseUpZoomMultiplier;
+            }
+            cameraOffset = new Vector3(0f, 0f, (1f - visible) / cameraZoom + (closeUp ? CloseUpFocusHeight * drawSize : 0f));
         }
     }
 }
