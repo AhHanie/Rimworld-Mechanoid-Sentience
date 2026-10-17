@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using RimWorld;
 using UnityEngine;
@@ -54,9 +55,25 @@ namespace Mechanoid_Sentience
             return isColonyMech && !SentientMechRegistry.IsSentient(pawn);
         }
 
+        [ThreadStatic]
+        private static int verbCommandDepth;
+
+        public static void EnterVerbCommand()
+        {
+            verbCommandDepth++;
+        }
+
+        public static void ExitVerbCommand()
+        {
+            if (verbCommandDepth > 0)
+            {
+                verbCommandDepth--;
+            }
+        }
+
         public static bool EverControllableOrSentient(bool everControllable, Pawn pawn)
         {
-            return everControllable || SentientMechRegistry.IsSentient(pawn);
+            return everControllable || (verbCommandDepth > 0 && SentientMechRegistry.IsSentient(pawn));
         }
 
         public static bool IsPlayerControlledOrSentient(bool playerControlled, Pawn pawn)

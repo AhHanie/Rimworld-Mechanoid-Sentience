@@ -39,6 +39,8 @@ namespace Mechanoid_Sentience
         private const string OutgoingMechName = "Fortified.OutgoingMech";
         private const string WeaponUsableMechName = "Fortified.WeaponUsableMech";
         private const string CachedDeadManSwitchFieldName = "cachedDeadManSwitch";
+        private const string CompUsablePatchName = "Fortified.Patch_CompUsable_CanBeUsedBy";
+        private const string IsFleshReplacementName = "IsFleshOrDeployableUser";
 
         private static readonly Dictionary<ThingDef, DmsRaceKind> originalKinds = new Dictionary<ThingDef, DmsRaceKind>();
         private static readonly Dictionary<ThingDef, DmsRaceKind> sentientKinds = new Dictionary<ThingDef, DmsRaceKind>();
@@ -52,6 +54,7 @@ namespace Mechanoid_Sentience
         private static MethodInfo outgoingMechesGetter;
         private static FieldInfo outgoingMechField;
         private static MethodBase weaponUsableMechSpawnSetup;
+        private static MethodBase isFleshReplacement;
 
         public static string BindFailure { get; private set; }
 
@@ -77,6 +80,8 @@ namespace Mechanoid_Sentience
         }
 
         public static MethodBase WeaponUsableMechSpawnSetup => IsAvailable ? weaponUsableMechSpawnSetup : null;
+
+        public static MethodBase CompUsableIsFleshReplacement => IsAvailable ? isFleshReplacement : null;
 
         public static void Bind()
         {
@@ -110,6 +115,9 @@ namespace Mechanoid_Sentience
             {
                 failures.Add("WeaponUsableMech.SpawnSetup(Map, bool)");
             }
+            Type compUsablePatch = AccessTools.TypeByName(CompUsablePatchName);
+            MethodBase replacement = compUsablePatch == null ? null : AccessTools.DeclaredMethod(compUsablePatch, IsFleshReplacementName);
+            isFleshReplacement = replacement != null && replacement.GetParameters().Select(p => p.ParameterType).SequenceEqual(new[] { typeof(RaceProperties), typeof(CompUsable), typeof(Pawn) }) ? replacement : null;
             BindFailure = failures.Count == 0 ? null : string.Join(", ", failures) + " not found";
         }
 
