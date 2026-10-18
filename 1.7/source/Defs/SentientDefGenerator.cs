@@ -108,6 +108,15 @@ namespace Mechanoid_Sentience
                 DeadMansSwitchCompat.EnsureCharacterTabs(clone);
             }
 
+            if (clone.comps == null)
+            {
+                clone.comps = new List<CompProperties>();
+            }
+            if (!clone.comps.Any(c => c is CompProperties_SentientRecharge))
+            {
+                clone.comps.Add(new CompProperties_SentientRecharge());
+            }
+
             clone.statBases?.RemoveAll(s => s.stat == StatDefOf.WorkSpeedGlobal);
 
             AddExtension(clone, original.defName);

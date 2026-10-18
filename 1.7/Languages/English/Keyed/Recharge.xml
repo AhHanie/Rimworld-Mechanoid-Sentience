@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+    <MechanoidSentience.Recharge.Label>Recharge limits</MechanoidSentience.Recharge.Label>
+    <MechanoidSentience.Recharge.Tooltip>Set when {0} goes to a charger by itself and when it stops charging.\n\nCurrent: {1}</MechanoidSentience.Recharge.Tooltip>
+    <MechanoidSentience.Recharge.Current>start below {0}, stop at {1}</MechanoidSentience.Recharge.Current>
+    <MechanoidSentience.Recharge.DialogTitle>Recharge limits: {0}</MechanoidSentience.Recharge.DialogTitle>
+    <MechanoidSentience.Recharge.Explanation>These are the automatic charging limits for this mechanoid only. It looks for a charger when its energy falls below the left handle, and stops charging at the right handle. Orders you give it directly are not affected.</MechanoidSentience.Recharge.Explanation>
+    <MechanoidSentience.Recharge.Pending>Start charging below {0}, stop charging at {1}</MechanoidSentience.Recharge.Pending>
+</LanguageData>

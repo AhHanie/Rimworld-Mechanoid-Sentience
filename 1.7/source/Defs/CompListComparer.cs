@@ -28,6 +28,8 @@ namespace Mechanoid_Sentience
         public bool IsHospitalityGuest => PropsType != null && CompClass != null
             && PropsType.FullName == CompListComparer.HospitalityPropsTypeName && CompClass.FullName == CompListComparer.HospitalityCompClassName;
 
+        public bool IsSentientRecharge => PropsType == typeof(CompProperties_SentientRecharge) && CompClass == typeof(CompSentientRecharge);
+
         public bool Equals(CompSignature other)
         {
             return PropsType == other.PropsType && CompClass == other.CompClass;
@@ -74,7 +76,7 @@ namespace Mechanoid_Sentience
             {
                 return null;
             }
-            string label = isAllowedRemoval == null ? "Source without overseer subject" : "Source without overseer subject and allowed removals";
+            string label = isAllowedRemoval == null ? "Source without overseer subject, plus the sentient recharge comp" : "Source without overseer subject and allowed removals, plus the sentient recharge comp";
             return difference + " " + label + " (" + expected.Count + "): " + Format(expected)
                 + ". Sentient (" + actual.Count + "): " + Format(actual) + ".";
         }
@@ -86,11 +88,13 @@ namespace Mechanoid_Sentience
 
         public static List<CompSignature> ExpectedBase(IList<CompProperties> original, Func<CompSignature, bool> isAllowedRemoval)
         {
-            return (original ?? new List<CompProperties>())
+            List<CompSignature> expected = (original ?? new List<CompProperties>())
                 .Where(c => !(c is CompProperties_OverseerSubject))
                 .Select(CompSignature.Of)
                 .Where(s => isAllowedRemoval == null || !isAllowedRemoval(s))
                 .ToList();
+            expected.Add(CompSignature.Of(new CompProperties_SentientRecharge()));
+            return expected;
         }
 
         public static string Format(IList<CompSignature> signatures)
@@ -138,6 +142,10 @@ namespace Mechanoid_Sentience
             int guestCount = 0;
             for (int i = expected.Count; i < actual.Count; i++)
             {
+                if (actual[i].IsSentientRecharge)
+                {
+                    return "Entry " + i + " is a duplicate of the sentient recharge comp " + actual[i] + ".";
+                }
                 if (actual[i].IsVefAbilities)
                 {
                     vefCount++;

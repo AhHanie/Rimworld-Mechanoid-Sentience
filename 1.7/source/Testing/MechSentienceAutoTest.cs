@@ -121,6 +121,7 @@ namespace Mechanoid_Sentience
                         Pawn pawn = FindSentient();
                         RenderTexture portrait = PortraitsCache.Get(pawn, new Vector2(128f, 128f), Rot4.South);
                         Check(portrait != null, "portrait renders");
+                        RechargeAutoTest.MarkForSave(pawn);
                         snapshot = Snapshot(pawn);
                         sentientThingId = pawn.thingIDNumber;
                         Log.Message("AUTOTEST info snapshot " + snapshot);
@@ -150,6 +151,7 @@ namespace Mechanoid_Sentience
                         {
                             string after = Snapshot(pawn);
                             Check(after == snapshot, "identity unchanged by save and load" + (after == snapshot ? "" : ": " + after));
+                            RechargeAutoTest.CheckAfterLoad(pawn);
                             if (WorkModesCompat.IsActive)
                             {
                                 WorkModesAutoTest.CheckAfterLoad(pawn);
@@ -206,6 +208,7 @@ namespace Mechanoid_Sentience
             Check(converted.thingIDNumber == id && converted.Spawned && !converted.Dead, "same pawn, still spawned");
             Check(converted.def.defName == SentientMechRegistry.DefPrefix + originalDef, "def is " + SentientMechRegistry.DefPrefix + originalDef + " (was " + converted.def.defName + ")");
             Check(SentientMechRegistry.IsSentient(converted) && SentientMechRegistry.IsSentientRace(converted.RaceProps), "registry reports sentient by def and by race props");
+            Check(converted.AllComps.OfType<CompSentientRecharge>().Count() == 1, "the live conversion created exactly one recharge comp");
             Check(converted.health.hediffSet.hediffs.Count == hediffs, "hediffs kept");
             Check(converted.equipment?.Primary == weapon, "weapon kept");
             Check(converted.story != null && converted.skills != null && converted.workSettings != null && converted.Name != null, "humanlike identity trackers and a name");
@@ -230,6 +233,7 @@ namespace Mechanoid_Sentience
             Check(rolledBack.thingIDNumber == rbId && rolledBack.def.defName == rbDef && !SentientMechRegistry.IsSentient(rolledBack), "rolled back pawn keeps ThingID and original def");
             Check(rolledBack.Spawned && rolledBack.Position == rbCell, "rolled back pawn is respawned in place");
             Check(rolledBack.AllComps.Count == rbComps && rolledBack.health.hediffSet.hediffs.Count == rbHediffs, "comps and hediffs restored");
+            Check(rolledBack.TryGetComp<CompSentientRecharge>() == null, "the recharge comp created for the sentient def is gone after the rollback");
             Check(rolledBack.story == null || rolledBack.story.Childhood == null, "no identity left behind");
 
             Pawn spare = Spawn("Mech_Militor");
@@ -245,6 +249,7 @@ namespace Mechanoid_Sentience
             {
                 WorkModesAutoTest.Run(Spawn);
             }
+            RechargeAutoTest.Run(Spawn);
             CheckSpecialtySkills(Spawn);
             CheckWeaponLock(Spawn);
             CheckSentientCorpseFilters();
@@ -310,6 +315,7 @@ namespace Mechanoid_Sentience
             }
             Check(generated != null && SentientMechRegistry.IsSentient(generated) && generated.genes == null, "directly generated sentient pawn is returned and stays gene-free");
             Check(generated?.story?.Childhood != null && generated.story.Adulthood != null, "directly generated sentient pawn has both backstories");
+            Check(generated != null && generated.AllComps.OfType<CompSentientRecharge>().Count() == 1, "directly generated sentient pawn has exactly one recharge comp");
             if (generated != null)
             {
                 Find.WorldPawns.PassToWorld(generated, RimWorld.Planet.PawnDiscardDecideMode.Discard);
