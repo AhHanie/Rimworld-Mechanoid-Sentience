@@ -11,10 +11,11 @@ namespace Mechanoid_Sentience
 {
     public class MechSentienceAutoTest : GameComponent
     {
-        private enum Step { WaitForGame, ConvertAndRollback, Run, MechanoidUpgrades, Screenshot, Save, WaitForLoad, VerifyAfterLoad, Done }
+        private enum Step { WaitForGame, ConvertAndRollback, Run, MechanoidUpgrades, Maidnoid, Screenshot, Save, WaitForLoad, VerifyAfterLoad, Done }
 
         private const string SaveName = "mechsentienceautotest";
         private const int MaxFramesPerStep = 4000;
+        private const int MaxFramesMaidnoidStep = 30000;
 
         private static bool argRead;
         private static string outputFolder;
@@ -45,7 +46,7 @@ namespace Mechanoid_Sentience
             }
 
             stepFrames++;
-            if (stepFrames > MaxFramesPerStep)
+            if (stepFrames > (step == Step.Maidnoid ? MaxFramesMaidnoidStep : MaxFramesPerStep))
             {
                 Fail("timeout in step " + step);
                 Finish();
@@ -86,7 +87,7 @@ namespace Mechanoid_Sentience
                             Find.Selector.Select(pawn, playSound: false, forceDesignatorDeselect: false);
                             Find.CameraDriver.JumpToCurrentMapLoc(pawn.Position);
                             Find.TickManager.CurTimeSpeed = TimeSpeed.Paused;
-                            Next(MechanoidUpgradesCompat.IsAvailable ? Step.MechanoidUpgrades : Step.Screenshot);
+                            Next(MechanoidUpgradesCompat.IsAvailable ? Step.MechanoidUpgrades : NextAfterMechanoidUpgrades());
                         }
                         else
                         {
@@ -96,6 +97,14 @@ namespace Mechanoid_Sentience
                     break;
                 case Step.MechanoidUpgrades:
                     if (MechanoidUpgradesAutoTest.Tick())
+                    {
+                        Find.Selector.ClearSelection();
+                        Find.Selector.Select(FindSentient(), playSound: false, forceDesignatorDeselect: false);
+                        Next(NextAfterMechanoidUpgrades());
+                    }
+                    break;
+                case Step.Maidnoid:
+                    if (MaidnoidAutoTest.Tick())
                     {
                         Find.Selector.ClearSelection();
                         Find.Selector.Select(FindSentient(), playSound: false, forceDesignatorDeselect: false);
@@ -145,6 +154,10 @@ namespace Mechanoid_Sentience
                             {
                                 WorkModesAutoTest.CheckAfterLoad(pawn);
                             }
+                            if (MaidnoidAutoTest.IsActive)
+                            {
+                                MaidnoidAutoTest.CheckAfterLoad(Find.CurrentMap);
+                            }
                             Find.Selector.Select(pawn, playSound: false, forceDesignatorDeselect: false);
                             Find.CameraDriver.JumpToCurrentMapLoc(pawn.Position);
                         }
@@ -164,6 +177,11 @@ namespace Mechanoid_Sentience
                     }
                     break;
             }
+        }
+
+        private static Step NextAfterMechanoidUpgrades()
+        {
+            return MaidnoidAutoTest.IsActive ? Step.Maidnoid : Step.Screenshot;
         }
 
         private static void ConvertAndRollback()
