@@ -26,5 +26,16 @@ namespace Mechanoid_Sentience
             __result = false;
             return false;
         }
+
+        [HarmonyPostfix]
+        [HarmonyAfter("Dubwise.DubsBadHygiene", "ProgressionTherapyMod")]
+        [HarmonyPriority(Priority.Last)]
+        public static void Postfix(NeedDef nd, Pawn ___pawn, ref bool __result)
+        {
+            if (__result && !SentientMechNeeds.IsAllowed(nd) && SentientMechRegistry.IsSentient(___pawn))
+            {
+                __result = false;
+            }
+        }
     }
 }

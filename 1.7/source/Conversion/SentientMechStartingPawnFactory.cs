@@ -197,8 +197,7 @@ namespace Mechanoid_Sentience
             {
                 throw new InvalidOperationException(pawn.ToStringSafe() + " has genes.");
             }
-            Pawn_NeedsTracker needs = pawn.needs;
-            if (needs == null || needs.mood == null || needs.joy == null || needs.beauty == null || needs.energy == null || needs.food != null || needs.rest != null)
+            if (!SentientMechNeeds.HasExactlyAllowedNeeds(pawn.needs))
             {
                 throw new InvalidOperationException(pawn.ToStringSafe() + " has the wrong needs.");
             }

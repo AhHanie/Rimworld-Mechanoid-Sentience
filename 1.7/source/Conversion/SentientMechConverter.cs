@@ -347,7 +347,7 @@ namespace Mechanoid_Sentience
         private static void VerifyNeeds(Pawn pawn)
         {
             Pawn_NeedsTracker needs = pawn.needs;
-            if (needs.mood == null || needs.joy == null || needs.beauty == null || needs.energy == null || needs.food != null || needs.rest != null || needs.AllNeeds.Count != 4)
+            if (!SentientMechNeeds.HasExactlyAllowedNeeds(needs))
             {
                 Log.Error("[Mechanoid Sentience] " + pawn.ToStringSafe() + " should have exactly mood, recreation, beauty and mech energy but has: " + needs.AllNeeds.Select(n => n.def.defName).ToCommaList());
             }
