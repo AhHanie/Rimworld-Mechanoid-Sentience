@@ -487,6 +487,22 @@ full name and bound by reflection (`Compatibility/WorkModes.cs`, `WorkModesCompa
 * Not covered: a real Biotech-only or Odyssey-less run (the harness cannot produce one, see above; the missing-tab path is covered
   offline), and the manual pass in `Plan.md` section 6.3.
 
+## DMS Lady appearance (1.7 only)
+
+* **Measured, not assumed.** `DmsLadyAutoTest` (Debug, runs when FFF and DMS II are active) records the Lady's final body and head node
+  sizes and head offset. Conversion never changed the kind life stage, body graphic (1.4), head graphic (1.4), meshes, `BodySize` or render
+  tree. What changed was the head node offset: `ApplyAppearanceDefaults` replaced her `Female` body type (head offset 0.34) with
+  `MS_SentientMech` (0), so her head moved from z=0.29 to z=-0.05 and sank into the body. Humanlike FFF mechs now keep
+  `HumanlikeMechExtension.bodyTypeOverride` / `headTypeOverride` (read by reflection in
+  `DeadMansSwitchCompat.GetHumanlikeAppearanceOverrides`; null without FFF, so every other mech still gets `MS_SentientMech`).
+* **Direct generation.** Generating a sentient kind through `PawnGenerator` (Cheat Menu) left vanilla's random head and tattoos on a pawn
+  without human graphics: the head or body tattoo node threw while the tree was built, leaving a null child that made
+  `RecacheRequested` throw every update. `PawnGenerator_TryGenerateNewPawnInternal_CompleteAppearance` applies `ApplyAppearanceDefaults`
+  to every sentient pawn the generator returns; `Pawn_ExposeData_Appearance` repairs only missing or graphic values on load (idempotent) and
+  dirties the render state.
+* The debug test advances its step before it runs: before, an exception in `ConvertAndRollback` repeated all spawns on every frame.
+* Not covered: a run with Ideology disabled and FFF active (the scripted profile cannot drop the DLCs), and the manual screenshot check.
+
 ## RimWorld 1.7 port
 
 Two independent trees ship side by side: `1.6/` (net472, unchanged) and `1.7/` (net10.0). Both have their own `Defs` and

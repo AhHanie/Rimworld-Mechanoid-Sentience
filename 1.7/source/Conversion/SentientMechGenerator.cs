@@ -60,35 +60,80 @@ namespace Mechanoid_Sentience
             GiveSkillsAndPassions(pawn, SentientMechSpecialty.Resolve(pawn));
         }
 
-        private static void ApplyAppearanceDefaults(Pawn pawn)
+        internal static void ApplyAppearanceDefaults(Pawn pawn)
+        {
+            CompleteAppearance(pawn, overwrite: true);
+        }
+
+        internal static bool RepairAppearance(Pawn pawn)
+        {
+            return CompleteAppearance(pawn, overwrite: false);
+        }
+
+        private static bool CompleteAppearance(Pawn pawn, bool overwrite)
         {
             Pawn_StoryTracker story = pawn.story;
-            story.bodyType = DefDatabase<BodyTypeDef>.GetNamed(SentientDefGenerator.BodyTypeName);
-            story.hairDef = HairDefOf.Bald;
-            story.skinColorOverride = SentientMechUtility.NeutralSkinColor;
-            story.SkinColorBase = SentientMechUtility.NeutralSkinColor;
-            if (!story.TryGetRandomHeadFromSet(DefDatabase<HeadTypeDef>.AllDefs.Where(h => h.randomChosen)) || story.headType == null)
+            if (story == null)
             {
-                story.headType = HeadTypeDefOf.Skull;
+                return false;
+            }
+            bool changed = false;
+            DeadMansSwitchCompat.GetHumanlikeAppearanceOverrides(pawn.def, out BodyTypeDef bodyOverride, out HeadTypeDef headOverride);
+            if (overwrite || story.bodyType == null)
+            {
+                story.bodyType = bodyOverride ?? DefDatabase<BodyTypeDef>.GetNamed(SentientDefGenerator.BodyTypeName);
+                changed = true;
+            }
+            if (overwrite || story.hairDef == null)
+            {
+                story.hairDef = HairDefOf.Bald;
+                changed = true;
+            }
+            if (overwrite)
+            {
+                story.skinColorOverride = SentientMechUtility.NeutralSkinColor;
+                story.SkinColorBase = SentientMechUtility.NeutralSkinColor;
+            }
+            if (overwrite || story.headType == null)
+            {
+                if (headOverride != null)
+                {
+                    story.headType = headOverride;
+                }
+                else if (!story.TryGetRandomHeadFromSet(DefDatabase<HeadTypeDef>.AllDefs.Where(h => h.randomChosen)) || story.headType == null)
+                {
+                    story.headType = HeadTypeDefOf.Skull;
+                }
+                changed = true;
             }
             if (pawn.style != null)
             {
-                pawn.style.beardDef = BeardDefOf.NoBeard;
-                if (ModsConfig.IdeologyActive)
+                if (overwrite || pawn.style.beardDef == null)
                 {
-                    pawn.style.FaceTattoo = TattooDefOf.NoTattoo_Face;
-                    pawn.style.BodyTattoo = TattooDefOf.NoTattoo_Body;
+                    pawn.style.beardDef = BeardDefOf.NoBeard;
+                    changed = true;
                 }
-                else
+                if (overwrite || pawn.style.FaceTattoo == null || !pawn.style.FaceTattoo.noGraphic || pawn.style.BodyTattoo == null || !pawn.style.BodyTattoo.noGraphic)
                 {
-                    pawn.style.SetupTattoos_NoIdeology();
+                    if (ModsConfig.IdeologyActive)
+                    {
+                        pawn.style.FaceTattoo = TattooDefOf.NoTattoo_Face;
+                        pawn.style.BodyTattoo = TattooDefOf.NoTattoo_Body;
+                    }
+                    else
+                    {
+                        pawn.style.SetupTattoos_NoIdeology();
+                    }
+                    changed = true;
                 }
             }
             if (ModsConfig.IdeologyActive && story.favoriteColor == null)
             {
                 ColorDef color = DefDatabase<ColorDef>.AllDefs.Where(c => c.colorType == ColorType.Ideo || c.colorType == ColorType.Misc).RandomElementWithFallback();
                 story.favoriteColor = color;
+                changed = true;
             }
+            return changed;
         }
 
         private static void GiveBackstories(Pawn pawn)

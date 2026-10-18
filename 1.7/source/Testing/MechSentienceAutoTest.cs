@@ -60,10 +60,17 @@ namespace Mechanoid_Sentience
                     }
                     break;
                 case Step.ConvertAndRollback:
-                    ConvertAndRollback();
+                    Next(Step.Run);
+                    try
+                    {
+                        ConvertAndRollback();
+                    }
+                    catch (Exception e)
+                    {
+                        Fail("ConvertAndRollback threw " + e);
+                    }
                     Find.TickManager.CurTimeSpeed = TimeSpeed.Ultrafast;
                     runStartTick = Find.TickManager.TicksGame;
-                    Next(Step.Run);
                     break;
                 case Step.Run:
                     if (Find.TickManager.TicksGame - runStartTick >= 1500)
@@ -226,6 +233,7 @@ namespace Mechanoid_Sentience
             CheckRealSentientCorpses(Spawn);
             CheckMetalhorrorExclusion(Spawn);
             CheckDirectGeneration();
+            DmsLadyAutoTest.Run(Spawn);
             CheckUnknownBackstories(Spawn);
         }
 

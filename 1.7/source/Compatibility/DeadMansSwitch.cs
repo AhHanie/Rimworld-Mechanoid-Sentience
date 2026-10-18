@@ -35,6 +35,7 @@ namespace Mechanoid_Sentience
         public const string DroneCompName = "Fortified.CompDrone";
         public const string HumanlikeMechInterfaceName = "Fortified.IHumanlikeMech";
 
+        private const string HumanlikeMechExtensionName = "Fortified.HumanlikeMechExtension";
         private const string GameComponentName = "Fortified.GameComponent_DMS";
         private const string OutgoingMechName = "Fortified.OutgoingMech";
         private const string WeaponUsableMechName = "Fortified.WeaponUsableMech";
@@ -352,6 +353,26 @@ namespace Mechanoid_Sentience
                     before = tabs.IndexOf(typeof(ITab_Pawn_Log));
                 }
                 tabs.Insert(before >= 0 ? before : tabs.Count, typeof(ITab_Pawn_Social));
+            }
+        }
+
+        public static void GetHumanlikeAppearanceOverrides(ThingDef sentientRace, out BodyTypeDef bodyType, out HeadTypeDef headType)
+        {
+            bodyType = null;
+            headType = null;
+            if (KindOfSentient(sentientRace) != DmsRaceKind.HumanlikeAutomatroid || sentientRace.modExtensions == null)
+            {
+                return;
+            }
+            foreach (DefModExtension extension in sentientRace.modExtensions)
+            {
+                Type type = extension?.GetType();
+                if (type?.FullName == HumanlikeMechExtensionName)
+                {
+                    bodyType = AccessTools.Field(type, "bodyTypeOverride")?.GetValue(extension) as BodyTypeDef;
+                    headType = AccessTools.Field(type, "headTypeOverride")?.GetValue(extension) as HeadTypeDef;
+                    return;
+                }
             }
         }
 
