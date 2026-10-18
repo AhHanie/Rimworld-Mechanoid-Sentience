@@ -224,8 +224,44 @@ namespace Mechanoid_Sentience
             CheckWeaponLock(Spawn);
             CheckSentientCorpseFilters();
             CheckRealSentientCorpses(Spawn);
+            CheckMetalhorrorExclusion(Spawn);
             CheckDirectGeneration();
             CheckUnknownBackstories(Spawn);
+        }
+
+        private static void CheckMetalhorrorExclusion(Func<string, Pawn> spawn)
+        {
+            if (!ModsConfig.AnomalyActive)
+            {
+                Log.Message("AUTOTEST info Anomaly inactive, metalhorror checks skipped");
+                return;
+            }
+            Pawn carrier = spawn("Mech_Militor");
+            carrier.health.AddHediff(HediffDefOf.MetalhorrorImplant);
+            Check(carrier.health.hediffSet.HasHediff(HediffDefOf.MetalhorrorImplant), "an ordinary mech can carry an implant");
+            Check(SentientMechConverter.TryConvert(carrier, showMessages: false), "implant carrier converted");
+            Check(!carrier.health.hediffSet.HasHediff(HediffDefOf.MetalhorrorImplant), "conversion removed the metalhorror implant");
+
+            Pawn ordinary = spawn("Mech_Lifter");
+            Pawn sentient = carrier;
+            Pawn human = PawnGenerator.GeneratePawn(new PawnGenerationRequest(PawnKindDefOf.Colonist, Faction.OfPlayer, forceGenerateNewPawn: true));
+            Check(!MetalhorrorUtility.CanBeInfected(sentient) && !MetalhorrorUtility.CanBeInfected(ordinary), "neither mech can be infected");
+            Check(MetalhorrorUtility.CanBeInfected(human), "an eligible human can still be infected");
+
+            MetalhorrorUtility.Infect(sentient);
+            MetalhorrorUtility.Infect(sentient);
+            Check(!sentient.health.hediffSet.HasHediff(HediffDefOf.MetalhorrorImplant), "Infect leaves a sentient mech without an implant");
+
+            int hediffs = sentient.health.hediffSet.hediffs.Count;
+            sentient.health.hediffSet.AddDirect(HediffMaker.MakeHediff(HediffDefOf.MetalhorrorImplant, sentient));
+            Check(!sentient.health.hediffSet.HasHediff(HediffDefOf.MetalhorrorImplant) && sentient.health.hediffSet.hediffs.Count == hediffs, "AddDirect refuses the implant on a sentient mech");
+            sentient.health.AddHediff(HediffDefOf.Anesthetic);
+            Check(sentient.health.hediffSet.HasHediff(HediffDefOf.Anesthetic), "an unrelated hediff still adds to a sentient mech");
+
+            MetalhorrorUtility.Infect(human);
+            Check(human.health.hediffSet.HasHediff(HediffDefOf.MetalhorrorImplant), "a human is still infected normally");
+            human.health.RemoveHediff(human.health.hediffSet.GetFirstHediffOfDef(HediffDefOf.MetalhorrorImplant));
+            Find.WorldPawns.PassToWorld(human, RimWorld.Planet.PawnDiscardDecideMode.Discard);
         }
 
         private static void CheckDirectGeneration()

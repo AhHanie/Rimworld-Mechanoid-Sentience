@@ -157,6 +157,8 @@ namespace Mechanoid_Sentience
             GenSpawn.Spawn(pawn, state.Cell, map, state.Rotation, WipeMode.Vanish, respawningAfterLoad: false);
             state.Stage = ConversionStage.Respawned;
 
+            SentientMetalhorror.RemoveMetalhorrorImplants(pawn);
+
             pawn.Drawer.renderer.SetAllGraphicsDirty();
             PortraitsCache.SetDirty(pawn);
             GlobalTextureAtlasManager.TryMarkPawnFrameSetDirty(pawn);
