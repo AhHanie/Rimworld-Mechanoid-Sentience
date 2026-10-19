@@ -117,6 +117,11 @@ namespace Mechanoid_Sentience
                 clone.comps.Add(new CompProperties_SentientRecharge());
             }
 
+            if (GestatableApocritonCompat.NeedsCoreRecharge(original) && !clone.comps.Any(c => c is CompProperties_SentientApocritonCoreRecharge))
+            {
+                clone.comps.Add(new CompProperties_SentientApocritonCoreRecharge());
+            }
+
             clone.statBases?.RemoveAll(s => s.stat == StatDefOf.WorkSpeedGlobal);
 
             AddExtension(clone, original.defName);

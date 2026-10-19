@@ -30,6 +30,8 @@ namespace Mechanoid_Sentience
 
         public bool IsSentientRecharge => PropsType == typeof(CompProperties_SentientRecharge) && CompClass == typeof(CompSentientRecharge);
 
+        public bool IsSentientApocritonCoreRecharge => PropsType == typeof(CompProperties_SentientApocritonCoreRecharge) && CompClass == typeof(CompSentientApocritonCoreRecharge);
+
         public bool Equals(CompSignature other)
         {
             return PropsType == other.PropsType && CompClass == other.CompClass;
@@ -140,11 +142,21 @@ namespace Mechanoid_Sentience
             }
             int vefCount = 0;
             int guestCount = 0;
+            int apocritonCount = 0;
             for (int i = expected.Count; i < actual.Count; i++)
             {
                 if (actual[i].IsSentientRecharge)
                 {
                     return "Entry " + i + " is a duplicate of the sentient recharge comp " + actual[i] + ".";
+                }
+                if (actual[i].IsSentientApocritonCoreRecharge)
+                {
+                    apocritonCount++;
+                    if (apocritonCount > 1)
+                    {
+                        return "Entry " + i + " is a duplicate of the sentient Apocriton core recharge comp " + actual[i] + ".";
+                    }
+                    continue;
                 }
                 if (actual[i].IsVefAbilities)
                 {
