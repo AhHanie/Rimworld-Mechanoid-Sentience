@@ -11,7 +11,7 @@ namespace Mechanoid_Sentience
 {
     public class MechSentienceAutoTest : GameComponent
     {
-        private enum Step { WaitForGame, ConvertAndRollback, Run, MechanoidUpgrades, GestatableApocriton, Maidnoid, Screenshot, Save, WaitForLoad, VerifyAfterLoad, Done }
+        private enum Step { WaitForGame, ConvertAndRollback, Run, MechanoidUpgrades, GestatableApocriton, ResurrectEnemyMechanoids, Maidnoid, Screenshot, Save, WaitForLoad, VerifyAfterLoad, Done }
 
         private const string SaveName = "mechsentienceautotest";
         private const int MaxFramesPerStep = 4000;
@@ -46,7 +46,7 @@ namespace Mechanoid_Sentience
             }
 
             stepFrames++;
-            if (stepFrames > (step == Step.Maidnoid || step == Step.GestatableApocriton ? MaxFramesMaidnoidStep : MaxFramesPerStep))
+            if (stepFrames > (step == Step.Maidnoid || step == Step.GestatableApocriton || step == Step.ResurrectEnemyMechanoids ? MaxFramesMaidnoidStep : MaxFramesPerStep))
             {
                 Fail("timeout in step " + step);
                 Finish();
@@ -111,6 +111,14 @@ namespace Mechanoid_Sentience
                         Next(NextAfterGestatableApocriton());
                     }
                     break;
+                case Step.ResurrectEnemyMechanoids:
+                    if (ResurrectEnemyMechanoidsAutoTest.Tick())
+                    {
+                        Find.Selector.ClearSelection();
+                        Find.Selector.Select(FindSentient(), playSound: false, forceDesignatorDeselect: false);
+                        Next(NextAfterResurrectEnemyMechanoids());
+                    }
+                    break;
                 case Step.Maidnoid:
                     if (MaidnoidAutoTest.Tick())
                     {
@@ -168,6 +176,10 @@ namespace Mechanoid_Sentience
                             {
                                 GestatableApocritonAutoTest.CheckAfterLoad(Find.CurrentMap);
                             }
+                            if (ResurrectEnemyMechanoidsCompat.IsAvailable && !ResurrectEnemyMechanoidsCompat.GestatableApocritonActive)
+                            {
+                                ResurrectEnemyMechanoidsAutoTest.CheckAfterLoad(Find.CurrentMap);
+                            }
                             if (MaidnoidAutoTest.IsActive)
                             {
                                 MaidnoidAutoTest.CheckAfterLoad(Find.CurrentMap);
@@ -199,6 +211,11 @@ namespace Mechanoid_Sentience
         }
 
         private static Step NextAfterGestatableApocriton()
+        {
+            return ResurrectEnemyMechanoidsCompat.IsAvailable && !ResurrectEnemyMechanoidsCompat.GestatableApocritonActive ? Step.ResurrectEnemyMechanoids : NextAfterResurrectEnemyMechanoids();
+        }
+
+        private static Step NextAfterResurrectEnemyMechanoids()
         {
             return MaidnoidAutoTest.IsActive ? Step.Maidnoid : Step.Screenshot;
         }

@@ -78,6 +78,7 @@ namespace Mechanoid_Sentience
             Check(ReferenceEquals(GestatableApocritonCompat.CarrierOf(ordinary), ordinaryCarrier) && ReferenceEquals(GestatableApocritonCompat.CoresOf(ordinary), ordinaryOwner), "the storage comp and its container are the same instances");
             Check(CoreCount(ordinary, core) == 7 && FillTarget(ordinaryCarrier) == 12, "the stored cores and the fill target survived (" + CoreCount(ordinary, core) + ", " + FillTarget(ordinaryCarrier) + ")");
             Check(ordinary.AllComps.OfType<CompSentientApocritonCoreRecharge>().Count() == 1, "exactly one sentient clock comp");
+            Check(ordinary.TryGetComp<CompSentientApocritonPassiveRecharge>() == null, "no free passive clock next to it (Resurrect Enemy Mechanoids, if also active, yields to the core based one)");
             Check(ordinary.abilities?.GetAbility(AbilityDefOf.ResurrectionMech) != null, "the resurrection ability is still there");
             Check(ordinary.GetOverseer() == null, "still no overseer");
 

@@ -24,7 +24,6 @@ namespace Mechanoid_Sentience
         private static bool? available;
         private static Type carrierCompType;
         private static MethodBase carrierGizmos;
-        private static AccessTools.FieldRef<CompAbilityEffect_ResurrectMech, int> chargesField;
 
         public static string BindFailure { get; private set; }
 
@@ -53,14 +52,13 @@ namespace Mechanoid_Sentience
 
         public static MethodBase CarrierGizmos => IsAvailable ? carrierGizmos : null;
 
-        private static bool RechargeBound => IsAvailable && carrierCompType != null && chargesField != null;
+        private static bool RechargeBound => IsAvailable && carrierCompType != null && ResurrectionChargeAccess.IsBound;
 
         public static void Bind()
         {
             var failures = new List<string>();
             carrierCompType = AccessTools.TypeByName(CarrierCompName);
             carrierGizmos = null;
-            chargesField = null;
             if (!typeof(ThingComp).IsAssignableFrom(carrierCompType) || !typeof(IThingHolder).IsAssignableFrom(carrierCompType))
             {
                 failures.Add(CarrierCompName + " (a ThingComp and IThingHolder)");
@@ -86,13 +84,10 @@ namespace Mechanoid_Sentience
                     failures.Add("CompCoreCarrier.CompGetGizmosExtra() reads the overseer " + overseerReads + " times (expected 1)");
                 }
             }
-            try
+            string chargesFailure = ResurrectionChargeAccess.Bind();
+            if (chargesFailure != null)
             {
-                chargesField = AccessTools.FieldRefAccess<CompAbilityEffect_ResurrectMech, int>("resurrectCharges");
-            }
-            catch (Exception)
-            {
-                failures.Add("CompAbilityEffect_ResurrectMech.resurrectCharges");
+                failures.Add(chargesFailure);
             }
             BindFailure = failures.Count == 0 ? null : string.Join(", ", failures);
         }
@@ -135,8 +130,7 @@ namespace Mechanoid_Sentience
 
         public static CompAbilityEffect_ResurrectMech ResurrectEffectOf(Pawn pawn, out Ability ability)
         {
-            ability = pawn.abilities?.GetAbility(AbilityDefOf.ResurrectionMech);
-            return ability?.EffectComps?.OfType<CompAbilityEffect_ResurrectMech>().FirstOrDefault();
+            return ResurrectionChargeAccess.EffectOf(pawn, out ability);
         }
 
         public static bool TryRecharge(Pawn pawn)
@@ -165,9 +159,7 @@ namespace Mechanoid_Sentience
                 cores.Take(stack, take).Destroy();
                 remaining -= take;
             }
-            int charges = effect.ChargesRemaining + 1;
-            chargesField(effect) = charges;
-            ability.RemainingCharges = charges;
+            ResurrectionChargeAccess.Set(effect, ability, effect.ChargesRemaining + 1);
             return true;
         }
     }

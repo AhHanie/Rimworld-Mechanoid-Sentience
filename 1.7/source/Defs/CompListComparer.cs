@@ -32,6 +32,8 @@ namespace Mechanoid_Sentience
 
         public bool IsSentientApocritonCoreRecharge => PropsType == typeof(CompProperties_SentientApocritonCoreRecharge) && CompClass == typeof(CompSentientApocritonCoreRecharge);
 
+        public bool IsSentientApocritonPassiveRecharge => PropsType == typeof(CompProperties_SentientApocritonPassiveRecharge) && CompClass == typeof(CompSentientApocritonPassiveRecharge);
+
         public bool Equals(CompSignature other)
         {
             return PropsType == other.PropsType && CompClass == other.CompClass;
@@ -143,6 +145,7 @@ namespace Mechanoid_Sentience
             int vefCount = 0;
             int guestCount = 0;
             int apocritonCount = 0;
+            int passiveCount = 0;
             for (int i = expected.Count; i < actual.Count; i++)
             {
                 if (actual[i].IsSentientRecharge)
@@ -155,6 +158,23 @@ namespace Mechanoid_Sentience
                     if (apocritonCount > 1)
                     {
                         return "Entry " + i + " is a duplicate of the sentient Apocriton core recharge comp " + actual[i] + ".";
+                    }
+                    if (passiveCount > 0)
+                    {
+                        return "Entry " + i + " is the sentient Apocriton core recharge comp " + actual[i] + ", which conflicts with the passive recharge comp (the two would charge the same ability).";
+                    }
+                    continue;
+                }
+                if (actual[i].IsSentientApocritonPassiveRecharge)
+                {
+                    passiveCount++;
+                    if (passiveCount > 1)
+                    {
+                        return "Entry " + i + " is a duplicate of the sentient Apocriton passive recharge comp " + actual[i] + ".";
+                    }
+                    if (apocritonCount > 0)
+                    {
+                        return "Entry " + i + " is the sentient Apocriton passive recharge comp " + actual[i] + ", which conflicts with the core recharge comp (the two would charge the same ability).";
                     }
                     continue;
                 }

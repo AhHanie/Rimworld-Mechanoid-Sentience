@@ -122,6 +122,12 @@ namespace Mechanoid_Sentience
                 clone.comps.Add(new CompProperties_SentientApocritonCoreRecharge());
             }
 
+            if (ResurrectEnemyMechanoidsCompat.NeedsPassiveRecharge(original)
+                && !clone.comps.Any(c => c is CompProperties_SentientApocritonCoreRecharge || c is CompProperties_SentientApocritonPassiveRecharge))
+            {
+                clone.comps.Add(new CompProperties_SentientApocritonPassiveRecharge());
+            }
+
             clone.statBases?.RemoveAll(s => s.stat == StatDefOf.WorkSpeedGlobal);
 
             AddExtension(clone, original.defName);
