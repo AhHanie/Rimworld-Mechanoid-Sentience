@@ -28,6 +28,9 @@ namespace Mechanoid_Sentience
         public bool IsHospitalityGuest => PropsType != null && CompClass != null
             && PropsType.FullName == CompListComparer.HospitalityPropsTypeName && CompClass.FullName == CompListComparer.HospitalityCompClassName;
 
+        public bool IsRimpsychePsyche => PropsType != null && CompClass != null
+            && PropsType.FullName == CompListComparer.RimpsychePropsTypeName && CompClass.FullName == CompListComparer.RimpsycheCompClassName;
+
         public bool IsSentientRecharge => PropsType == typeof(CompProperties_SentientRecharge) && CompClass == typeof(CompSentientRecharge);
 
         public bool IsSentientApocritonCoreRecharge => PropsType == typeof(CompProperties_SentientApocritonCoreRecharge) && CompClass == typeof(CompSentientApocritonCoreRecharge);
@@ -65,6 +68,8 @@ namespace Mechanoid_Sentience
         public const string VefCompClassName = "VEF.Abilities.CompAbilities";
         public const string HospitalityPropsTypeName = "Hospitality.CompProperties_Guest";
         public const string HospitalityCompClassName = "Hospitality.CompGuest";
+        public const string RimpsychePropsTypeName = RimpsycheCompat.PropsTypeName;
+        public const string RimpsycheCompClassName = RimpsycheCompat.CompTypeName;
 
         public static string FirstDifference(IList<CompProperties> original, IList<CompProperties> sentient, out bool hasVefExtra)
         {
@@ -144,6 +149,7 @@ namespace Mechanoid_Sentience
             }
             int vefCount = 0;
             int guestCount = 0;
+            int psycheCount = 0;
             int apocritonCount = 0;
             int passiveCount = 0;
             for (int i = expected.Count; i < actual.Count; i++)
@@ -193,6 +199,15 @@ namespace Mechanoid_Sentience
                     if (guestCount > 1)
                     {
                         return "Entry " + i + " is a duplicate of the Hospitality guest comp " + actual[i] + ".";
+                    }
+                    continue;
+                }
+                if (actual[i].IsRimpsychePsyche)
+                {
+                    psycheCount++;
+                    if (psycheCount > 1)
+                    {
+                        return "Entry " + i + " is a duplicate of the Rimpsyche psyche comp " + actual[i] + ".";
                     }
                     continue;
                 }

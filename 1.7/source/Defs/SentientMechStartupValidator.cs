@@ -51,6 +51,7 @@ namespace Mechanoid_Sentience
                     Log.Error("[Mechanoid Sentience] " + sentient.defName + ": " + problem);
                 }
             }
+            int psycheRaces = RimpsycheCompat.RegisterAndVerify(SentientMechRegistry.SentientRaces);
             foreach (PawnKindDef sentientKind in DefDatabase<PawnKindDef>.AllDefsListForReading.Where(SentientMechRegistry.IsSentientKind))
             {
                 PawnKindDef originalKind = SentientMechRegistry.OriginalOf(sentientKind);
@@ -64,7 +65,7 @@ namespace Mechanoid_Sentience
                     Log.Error("[Mechanoid Sentience] " + sentientKind.defName + ": " + problem);
                 }
             }
-            Logger.Message("Validated " + checkedPairs + " sentient mechanoid race(s)" + (vefExtras > 0 ? " (" + vefExtras + " with the optional VEF ability comp)" : "") + (dmsRaces > 0 ? " (" + dmsRaces + " Dead Man's Switch / FFF race(s))." : "."));
+            Logger.Message("Validated " + checkedPairs + " sentient mechanoid race(s)" + (vefExtras > 0 ? " (" + vefExtras + " with the optional VEF ability comp)" : "") + (dmsRaces > 0 ? " (" + dmsRaces + " Dead Man's Switch / FFF race(s))" : "") + (psycheRaces > 0 ? " (" + psycheRaces + " with a Rimpsyche psyche, nonsexual)" : "") + ".");
         }
 
         private static IEnumerable<string> RaceProblems(ThingDef original, ThingDef sentient)

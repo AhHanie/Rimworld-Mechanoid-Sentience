@@ -11,7 +11,7 @@ namespace Mechanoid_Sentience
 {
     public class MechSentienceAutoTest : GameComponent
     {
-        private enum Step { WaitForGame, ConvertAndRollback, Run, MechanoidUpgrades, GestatableApocriton, ResurrectEnemyMechanoids, Maidnoid, Screenshot, Save, WaitForLoad, VerifyAfterLoad, Done }
+        private enum Step { WaitForGame, ConvertAndRollback, Run, MechanoidUpgrades, GestatableApocriton, ResurrectEnemyMechanoids, Maidnoid, Rimpsyche, Screenshot, Save, WaitForLoad, VerifyAfterLoad, Done }
 
         private const string SaveName = "mechsentienceautotest";
         private const int MaxFramesPerStep = 4000;
@@ -124,6 +124,14 @@ namespace Mechanoid_Sentience
                     {
                         Find.Selector.ClearSelection();
                         Find.Selector.Select(FindSentient(), playSound: false, forceDesignatorDeselect: false);
+                        Next(NextAfterMaidnoid());
+                    }
+                    break;
+                case Step.Rimpsyche:
+                    if (RimpsycheAutoTest.TickUi(FindSentient(), outputFolder))
+                    {
+                        Find.Selector.ClearSelection();
+                        Find.Selector.Select(FindSentient(), playSound: false, forceDesignatorDeselect: false);
                         Next(Step.Screenshot);
                     }
                     break;
@@ -138,6 +146,10 @@ namespace Mechanoid_Sentience
                         RenderTexture portrait = PortraitsCache.Get(pawn, new Vector2(128f, 128f), Rot4.South);
                         Check(portrait != null, "portrait renders");
                         RechargeAutoTest.MarkForSave(pawn);
+                        if (RimpsycheAutoTest.IsActive)
+                        {
+                            RimpsycheAutoTest.MarkForSave(pawn);
+                        }
                         snapshot = Snapshot(pawn);
                         sentientThingId = pawn.thingIDNumber;
                         Log.Message("AUTOTEST info snapshot " + snapshot);
@@ -175,6 +187,10 @@ namespace Mechanoid_Sentience
                             string after = Snapshot(pawn);
                             Check(after == snapshot, "identity unchanged by save and load" + (after == snapshot ? "" : ": " + after));
                             RechargeAutoTest.CheckAfterLoad(pawn);
+                            if (RimpsycheAutoTest.IsActive)
+                            {
+                                RimpsycheAutoTest.CheckAfterLoad(pawn);
+                            }
                             if (WorkModesCompat.IsActive)
                             {
                                 WorkModesAutoTest.CheckAfterLoad(pawn);
@@ -225,7 +241,12 @@ namespace Mechanoid_Sentience
 
         private static Step NextAfterResurrectEnemyMechanoids()
         {
-            return MaidnoidAutoTest.IsActive ? Step.Maidnoid : Step.Screenshot;
+            return MaidnoidAutoTest.IsActive ? Step.Maidnoid : NextAfterMaidnoid();
+        }
+
+        private static Step NextAfterMaidnoid()
+        {
+            return RimpsycheAutoTest.IsActive ? Step.Rimpsyche : Step.Screenshot;
         }
 
         private static void ConvertAndRollback()
@@ -300,6 +321,16 @@ namespace Mechanoid_Sentience
             CheckDirectGeneration();
             DmsLadyAutoTest.Run(Spawn);
             CheckUnknownBackstories(Spawn);
+
+            Log.Message("AUTOTEST info Rimpsyche active=" + RimpsycheAutoTest.IsActive);
+            if (RimpsycheAutoTest.IsActive)
+            {
+                RimpsycheAutoTest.RunStartup();
+                RimpsycheAutoTest.CheckRollback(Spawn);
+                RimpsycheAutoTest.CheckStartingAndGenerated();
+                RimpsycheAutoTest.CheckConversations(Spawn);
+                RimpsycheAutoTest.CheckAllSentientOnMap(map);
+            }
         }
 
         private static void CheckMetalhorrorExclusion(Func<string, Pawn> spawn)

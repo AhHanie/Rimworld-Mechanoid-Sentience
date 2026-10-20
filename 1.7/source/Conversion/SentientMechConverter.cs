@@ -17,6 +17,8 @@ namespace Mechanoid_Sentience
 
         public static bool ForceFailureForTesting;
 
+        public static Action<Pawn> AfterSwapForTesting;
+
         public static AcceptanceReport CanConvert(Pawn pawn)
         {
             return CanConvert(pawn, out _, out _);
@@ -146,6 +148,7 @@ namespace Mechanoid_Sentience
 
             SwapToSentientDefs(pawn, sentientRace, sentientKind, dmsKind);
 
+            AfterSwapForTesting?.Invoke(pawn);
             if (ForceFailureForTesting)
             {
                 ForceFailureForTesting = false;
@@ -327,6 +330,7 @@ namespace Mechanoid_Sentience
             pawn.compStyleable = pawn.GetComp<CompStyleable>();
             pawn.compForbiddable = pawn.GetComp<CompForbiddable>();
             pawn.compQuality = pawn.GetComp<CompQuality>();
+            RimpsycheCompat.ClearCache(pawn);
         }
 
         private static void ClearSleepSchedule(Pawn pawn)
