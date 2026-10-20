@@ -20,6 +20,9 @@ namespace Mechanoid_Sentience
         private static IEnumerator routine;
         private static int savedPawnId;
         private static int savedClockTick;
+        private static int legacySentientId;
+        private static int legacyOrdinaryId;
+        private static Pawn[] legacyPawns;
 
         public static bool Tick()
         {
@@ -190,6 +193,13 @@ namespace Mechanoid_Sentience
             Check(ReferenceEquals(GestatableApocritonCompat.CarrierOf(rolledBack), rolledBackCarrier) && CoreCount(rolledBack, core) == 5 && FillTarget(rolledBackCarrier) == 8, "the original storage kept its cores and fill target");
             rolledBack.Destroy();
 
+            Pawn legacySentient = Spawn("Mech_Apocriton");
+            Check(SentientMechConverter.TryConvert(legacySentient, showMessages: false), "the legacy test Apocriton converted");
+            Pawn legacyOrdinary = Spawn("Mech_Apocriton");
+            legacyPawns = new[] { legacySentient, legacyOrdinary };
+            legacySentientId = legacySentient.thingIDNumber;
+            legacyOrdinaryId = legacyOrdinary.thingIDNumber;
+
             ClearCores(ordinary);
             AddCores(ordinary, core, SavedCores);
             SetFillTarget(ordinaryCarrier, SavedFillTarget);
@@ -216,6 +226,54 @@ namespace Mechanoid_Sentience
             Find.Selector.ClearSelection();
             Find.Selector.Select(pawn, playSound: false, forceDesignatorDeselect: false);
             Check(BarCount(pawn) == 1, "the loaded pawn shows exactly one bar");
+        }
+
+        public static void WithLegacyStorageGone(Action save)
+        {
+            var field = GestatableApocritonCompat.CarrierCompType.GetField("innerContainer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var removed = new List<(ThingComp comp, object storage)>();
+            foreach (Pawn pawn in legacyPawns)
+            {
+                ThingComp comp = GestatableApocritonCompat.CarrierOf(pawn);
+                removed.Add((comp, field.GetValue(comp)));
+                field.SetValue(comp, null);
+            }
+            try
+            {
+                save();
+            }
+            finally
+            {
+                foreach (var (comp, storage) in removed)
+                {
+                    field.SetValue(comp, storage);
+                }
+            }
+        }
+
+        public static void CheckLegacyAfterLoad(Map map)
+        {
+            foreach (int id in new[] { legacySentientId, legacyOrdinaryId })
+            {
+                string who = id == legacySentientId ? "the sentient" : "the ordinary";
+                Pawn pawn = map.mapPawns.AllPawnsSpawned.FirstOrDefault(p => p.thingIDNumber == id);
+                ThingComp carrier = pawn == null ? null : GestatableApocritonCompat.CarrierOf(pawn);
+                Check(carrier != null, who + " legacy Apocriton is still there after reload");
+                if (carrier == null)
+                {
+                    continue;
+                }
+                Check(GestatableApocritonCompat.CoresOf(pawn) != null, who + " legacy Apocriton got an empty core storage on load");
+                try
+                {
+                    Check((int)carrier.GetType().GetProperty("IngredientCount").GetValue(carrier) == 0 && (bool)carrier.GetType().GetProperty("LowIngredientCount").GetValue(carrier)
+                        && (float)carrier.GetType().GetProperty("PercentageFull").GetValue(carrier) == 0f, who + " legacy Apocriton reports an empty store without throwing");
+                }
+                catch (Exception e)
+                {
+                    MechSentienceAutoTest.Fail("Apocriton: " + who + " legacy Apocriton threw reading its core count: " + e.InnerException);
+                }
+            }
         }
 
         private static int BarCount(Pawn pawn)

@@ -145,7 +145,14 @@ namespace Mechanoid_Sentience
                     }
                     break;
                 case Step.Save:
-                    GameDataSaveLoader.SaveGame(SaveName);
+                    if (GestatableApocritonCompat.IsAvailable)
+                    {
+                        GestatableApocritonAutoTest.WithLegacyStorageGone(() => GameDataSaveLoader.SaveGame(SaveName));
+                    }
+                    else
+                    {
+                        GameDataSaveLoader.SaveGame(SaveName);
+                    }
                     gameBeforeLoad = Current.Game;
                     GameDataSaveLoader.LoadGame(SaveName);
                     Next(Step.WaitForLoad);
@@ -175,6 +182,7 @@ namespace Mechanoid_Sentience
                             if (GestatableApocritonCompat.IsAvailable)
                             {
                                 GestatableApocritonAutoTest.CheckAfterLoad(Find.CurrentMap);
+                                GestatableApocritonAutoTest.CheckLegacyAfterLoad(Find.CurrentMap);
                             }
                             if (ResurrectEnemyMechanoidsCompat.IsAvailable && !ResurrectEnemyMechanoidsCompat.GestatableApocritonActive)
                             {

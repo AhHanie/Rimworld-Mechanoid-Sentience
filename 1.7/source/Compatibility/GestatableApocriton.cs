@@ -24,6 +24,8 @@ namespace Mechanoid_Sentience
         private static bool? available;
         private static Type carrierCompType;
         private static MethodBase carrierGizmos;
+        private static MethodBase carrierSpawnSetup;
+        private static FieldInfo carrierContainerField;
 
         public static string BindFailure { get; private set; }
 
@@ -52,6 +54,8 @@ namespace Mechanoid_Sentience
 
         public static MethodBase CarrierGizmos => IsAvailable ? carrierGizmos : null;
 
+        public static MethodBase CarrierSpawnSetup => IsAvailable && carrierContainerField != null ? carrierSpawnSetup : null;
+
         private static bool RechargeBound => IsAvailable && carrierCompType != null && ResurrectionChargeAccess.IsBound;
 
         public static void Bind()
@@ -59,6 +63,8 @@ namespace Mechanoid_Sentience
             var failures = new List<string>();
             carrierCompType = AccessTools.TypeByName(CarrierCompName);
             carrierGizmos = null;
+            carrierSpawnSetup = null;
+            carrierContainerField = null;
             if (!typeof(ThingComp).IsAssignableFrom(carrierCompType) || !typeof(IThingHolder).IsAssignableFrom(carrierCompType))
             {
                 failures.Add(CarrierCompName + " (a ThingComp and IThingHolder)");
@@ -82,6 +88,16 @@ namespace Mechanoid_Sentience
                 else
                 {
                     failures.Add("CompCoreCarrier.CompGetGizmosExtra() reads the overseer " + overseerReads + " times (expected 1)");
+                }
+            }
+            if (carrierCompType != null)
+            {
+                FieldInfo container = AccessTools.Field(carrierCompType, "innerContainer");
+                MethodBase spawnSetup = AccessTools.DeclaredMethod(carrierCompType, nameof(ThingComp.PostSpawnSetup));
+                if (container != null && container.FieldType == typeof(ThingOwner) && spawnSetup != null)
+                {
+                    carrierContainerField = container;
+                    carrierSpawnSetup = spawnSetup;
                 }
             }
             string chargesFailure = ResurrectionChargeAccess.Bind();
@@ -121,6 +137,14 @@ namespace Mechanoid_Sentience
                 }
             }
             return null;
+        }
+
+        public static void EnsureStorage(ThingComp carrier)
+        {
+            if (carrierContainerField != null && carrier != null && carrierContainerField.GetValue(carrier) == null)
+            {
+                carrierContainerField.SetValue(carrier, new ThingOwner<Thing>((IThingHolder)carrier, false, LookMode.Deep, true));
+            }
         }
 
         public static ThingOwner CoresOf(Pawn pawn)
