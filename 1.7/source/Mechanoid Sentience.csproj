@@ -10,7 +10,7 @@
     <Nullable>disable</Nullable>
     <Deterministic>true</Deterministic>
     <LangVersion>latest</LangVersion>
-    <OutputPath>..\Assemblies\</OutputPath>
+    <OutputPath>..\Base\Assemblies\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <RimWorldDir Condition="'$(RimWorldDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\RimWorld</RimWorldDir>
     <HarmonyDll Condition="'$(HarmonyDll)' == ''">C:\Me\Games\Rimworld\Harmony\1.7\0Harmony.dll</HarmonyDll>

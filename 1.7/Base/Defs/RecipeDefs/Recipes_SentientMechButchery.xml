@@ -14,7 +14,6 @@
       <specialFiltersToAllow>
         <li>AllowCorpsesColonist</li>
         <li>AllowCorpsesStranger</li>
-        <li MayRequire="Ludeon.RimWorld.Ideology">AllowCorpsesSlave</li>
       </specialFiltersToAllow>
     </fixedIngredientFilter>
     <defaultIngredientFilter Inherit="False">
@@ -24,7 +23,6 @@
       <specialFiltersToAllow>
         <li>AllowCorpsesColonist</li>
         <li>AllowCorpsesStranger</li>
-        <li MayRequire="Ludeon.RimWorld.Ideology">AllowCorpsesSlave</li>
       </specialFiltersToAllow>
     </defaultIngredientFilter>
   </RecipeDef>
@@ -43,7 +41,6 @@
       <specialFiltersToAllow>
         <li>AllowCorpsesColonist</li>
         <li>AllowCorpsesStranger</li>
-        <li MayRequire="Ludeon.RimWorld.Ideology">AllowCorpsesSlave</li>
       </specialFiltersToAllow>
     </fixedIngredientFilter>
     <defaultIngredientFilter Inherit="False">
@@ -53,7 +50,6 @@
       <specialFiltersToAllow>
         <li>AllowCorpsesColonist</li>
         <li>AllowCorpsesStranger</li>
-        <li MayRequire="Ludeon.RimWorld.Ideology">AllowCorpsesSlave</li>
       </specialFiltersToAllow>
     </defaultIngredientFilter>
   </RecipeDef>

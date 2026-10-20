@@ -10,12 +10,6 @@
           <treeDef>Downed</treeDef>
         </li>
 
-        <li Class="ThinkNode_ConditionalDeactivated" MayRequire="Ludeon.RimWorld.Odyssey">
-          <subNodes>
-            <li Class="JobGiver_Deactivated" />
-          </subNodes>
-        </li>
-
         <li Class="ThinkNode_ConditionalLowEnergy">
           <subNodes>
             <li Class="JobGiver_SelfShutdown" />
@@ -108,12 +102,6 @@
                 <li Class="JobGiver_GetEnergy_Charger">
                   <leaveJoinableLordIfIssuesJob>true</leaveJoinableLordIfIssuesJob>
                 </li>
-              </subNodes>
-            </li>
-
-            <li Class="MU.ThinkNode_ConditionalUpgradeNeedsReload" MayRequire="GoGaTio.MechanoidUpgrades">
-              <subNodes>
-                <li Class="MU.JobGiver_ReloadUpgrades" />
               </subNodes>
             </li>
 

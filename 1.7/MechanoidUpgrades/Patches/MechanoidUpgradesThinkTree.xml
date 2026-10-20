@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+  <Operation Class="PatchOperationInsert">
+    <xpath>/Defs/ThinkTreeDef[defName="MS_SentientMech"]/thinkRoot/subNodes/li[@Class="ThinkNode_ConditionalColonist"]/subNodes/li[@Class="JobGiver_Work"][emergency="true"]</xpath>
+    <order>Prepend</order>
+    <value>
+      <li Class="MU.ThinkNode_ConditionalUpgradeNeedsReload">
+        <subNodes>
+          <li Class="MU.JobGiver_ReloadUpgrades" />
+        </subNodes>
+      </li>
+    </value>
+  </Operation>
+</Patch>

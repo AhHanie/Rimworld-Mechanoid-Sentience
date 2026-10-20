@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+  <Operation Class="PatchOperationAdd">
+    <xpath>/Defs/RecipeDef[defName="MS_ButcherCorpseSentientMech"]/fixedIngredientFilter/specialFiltersToAllow</xpath>
+    <value>
+      <li>AllowCorpsesSlave</li>
+    </value>
+  </Operation>
+  <Operation Class="PatchOperationAdd">
+    <xpath>/Defs/RecipeDef[defName="MS_ButcherCorpseSentientMech"]/defaultIngredientFilter/specialFiltersToAllow</xpath>
+    <value>
+      <li>AllowCorpsesSlave</li>
+    </value>
+  </Operation>
+  <Operation Class="PatchOperationAdd">
+    <xpath>/Defs/RecipeDef[defName="MS_SmashCorpseSentientMech"]/fixedIngredientFilter/specialFiltersToAllow</xpath>
+    <value>
+      <li>AllowCorpsesSlave</li>
+    </value>
+  </Operation>
+  <Operation Class="PatchOperationAdd">
+    <xpath>/Defs/RecipeDef[defName="MS_SmashCorpseSentientMech"]/defaultIngredientFilter/specialFiltersToAllow</xpath>
+    <value>
+      <li>AllowCorpsesSlave</li>
+    </value>
+  </Operation>
+</Patch>
