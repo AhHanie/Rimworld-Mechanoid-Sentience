@@ -107,7 +107,9 @@ namespace Mechanoid_Sentience
     {
         public static bool IsRemovedFromSentient(DmsRaceKind dmsKind, CompSignature signature)
         {
-            return WorkModesCompat.IsOverseerBoundComp(signature) || DeadMansSwitchCompat.IsRemovedFromSentient(dmsKind, signature);
+            return WorkModesCompat.IsOverseerBoundComp(signature)
+                || HackingExpansionCompat.IsTargetComp(signature)
+                || DeadMansSwitchCompat.IsRemovedFromSentient(dmsKind, signature);
         }
     }
 }

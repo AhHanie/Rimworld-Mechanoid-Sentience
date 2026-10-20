@@ -162,6 +162,8 @@ namespace Mechanoid_Sentience
 
             SentientMetalhorror.RemoveMetalhorrorImplants(pawn);
 
+            HackingExpansionCompat.RemoveDisabledHediff(pawn);
+
             pawn.Drawer.renderer.SetAllGraphicsDirty();
             PortraitsCache.SetDirty(pawn);
             GlobalTextureAtlasManager.TryMarkPawnFrameSetDirty(pawn);
@@ -187,6 +189,7 @@ namespace Mechanoid_Sentience
         {
             RemoveDeadMansSwitchComps(pawn, dmsKind);
             RemoveOverseerBoundComps(pawn);
+            RemoveHackTargetComps(pawn);
             pawn.def = sentientRace;
             pawn.kindDef = sentientKind;
             ReconcileComps(pawn, sentientRace);
@@ -284,6 +287,21 @@ namespace Mechanoid_Sentience
             SetComps(pawn, kept);
             WorkModesCompat.NotifyCompsRemoved();
             Logger.Message("Removed " + removed.Count + " overseer bound comp(s) from " + pawn.ToStringSafe() + ": " + removed.Select(c => c.GetType().FullName).ToCommaList());
+        }
+
+        private static void RemoveHackTargetComps(Pawn pawn)
+        {
+            if (!(CompsField.GetValue(pawn) is List<ThingComp> live))
+            {
+                return;
+            }
+            List<ThingComp> kept = HackingExpansionCompat.WithoutTargetComps(live, out List<ThingComp> removed);
+            if (removed.Count == 0)
+            {
+                return;
+            }
+            SetComps(pawn, kept);
+            Logger.Message("Removed " + removed.Count + " Hacking Expansion hack target comp(s) from " + pawn.ToStringSafe() + ": " + removed.Select(c => c.GetType().FullName).ToCommaList());
         }
 
         private static void ReconcileComps(Pawn pawn, ThingDef sentientRace)

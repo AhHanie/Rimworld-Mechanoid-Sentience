@@ -312,6 +312,7 @@ namespace Mechanoid_Sentience
             {
                 WorkModesAutoTest.Run(Spawn);
             }
+            HackingExpansionAutoTest.RunPure();
             RechargeAutoTest.Run(Spawn);
             CheckSpecialtySkills(Spawn);
             CheckWeaponLock(Spawn);
