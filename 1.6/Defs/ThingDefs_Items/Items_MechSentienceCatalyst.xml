@@ -8,6 +8,7 @@
     <graphicData>
       <texPath>MechanoidSentience/Things/Item/Special/MechSentienceCatalyst</texPath>
       <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>0.85</drawSize>
     </graphicData>
     <thingClass>ThingWithComps</thingClass>
     <useHitPoints>true</useHitPoints>

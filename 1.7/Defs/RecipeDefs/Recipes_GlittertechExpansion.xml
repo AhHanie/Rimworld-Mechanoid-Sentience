@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <RecipeDef ParentName="ButcherCorpseMechanoidBase" MayRequire="Ushanka.GlittertechExpansion">
+    <defName>MS_USH_DisassembleCorpseSentientMech</defName>
+    <label>disassemble sentient mechanoid</label>
+    <description>Disassemble the body of a dead sentient mechanoid to extract multiple valuable resources, for double the usual yield. Sentient mechanoids are people: this counts as butchering a humanlike, with the same mood effects and reactions as butchering a human.</description>
+    <jobString>Disassembling sentient mechanoid.</jobString>
+    <workAmount>600</workAmount>
+    <soundWorking>Recipe_ButcherCorpseMechanoid</soundWorking>
+    <specialProducts>
+      <li>Butchery</li>
+      <li>Butchery</li>
+    </specialProducts>
+    <fixedIngredientFilter Inherit="False">
+      <categories>
+        <li>MS_CorpsesSentientMech</li>
+      </categories>
+      <specialFiltersToAllow>
+        <li>AllowCorpsesColonist</li>
+        <li>AllowCorpsesStranger</li>
+        <li MayRequire="Ludeon.RimWorld.Ideology">AllowCorpsesSlave</li>
+      </specialFiltersToAllow>
+    </fixedIngredientFilter>
+    <defaultIngredientFilter Inherit="False">
+      <categories>
+        <li>MS_CorpsesSentientMech</li>
+      </categories>
+      <specialFiltersToAllow>
+        <li>AllowCorpsesColonist</li>
+        <li>AllowCorpsesStranger</li>
+        <li MayRequire="Ludeon.RimWorld.Ideology">AllowCorpsesSlave</li>
+      </specialFiltersToAllow>
+    </defaultIngredientFilter>
+  </RecipeDef>
+</Defs>
