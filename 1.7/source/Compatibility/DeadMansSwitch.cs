@@ -45,6 +45,7 @@ namespace Mechanoid_Sentience
 
         private static readonly Dictionary<ThingDef, DmsRaceKind> originalKinds = new Dictionary<ThingDef, DmsRaceKind>();
         private static readonly Dictionary<ThingDef, DmsRaceKind> sentientKinds = new Dictionary<ThingDef, DmsRaceKind>();
+        private static readonly HashSet<ThingDef> apparelRaces = new HashSet<ThingDef>();
         private static readonly List<string> summary = new List<string>();
 
         private static bool? available;
@@ -166,8 +167,12 @@ namespace Mechanoid_Sentience
         public static bool IsOwnershipComp(CompSignature signature)
         {
             return Matches(signature, DeadManSwitchPropsName, DeadManSwitchCompName)
-                || Matches(signature, InteractePropsName, InteracteCompName)
-                || Matches(signature, MechApparelPropsName, MechApparelCompName);
+                || Matches(signature, InteractePropsName, InteracteCompName);
+        }
+
+        public static bool IsMechApparelComp(CompSignature signature)
+        {
+            return Matches(signature, MechApparelPropsName, MechApparelCompName);
         }
 
         public static bool IsRemovedFromSentient(DmsRaceKind kind, CompSignature signature)
@@ -175,7 +180,6 @@ namespace Mechanoid_Sentience
             switch (kind)
             {
                 case DmsRaceKind.Automatroid:
-                    return Matches(signature, DeadManSwitchPropsName, DeadManSwitchCompName) || Matches(signature, InteractePropsName, InteracteCompName);
                 case DmsRaceKind.HumanlikeAutomatroid:
                     return IsOwnershipComp(signature);
                 default:
@@ -187,6 +191,7 @@ namespace Mechanoid_Sentience
         {
             originalKinds.Clear();
             sentientKinds.Clear();
+            apparelRaces.Clear();
             summary.Clear();
         }
 
@@ -198,6 +203,11 @@ namespace Mechanoid_Sentience
             }
             originalKinds[original] = kind;
             sentientKinds[sentient] = kind;
+            if (kind == DmsRaceKind.HumanlikeAutomatroid && HasMechApparelComp(original))
+            {
+                apparelRaces.Add(original);
+                apparelRaces.Add(sentient);
+            }
             summary.Add(original.defName + " (" + (original.modContentPack?.Name ?? "unknown mod") + ") -> " + sentient.defName + ": " + kind);
         }
 
@@ -209,6 +219,21 @@ namespace Mechanoid_Sentience
         public static DmsRaceKind KindOfSentient(ThingDef sentient)
         {
             return sentient != null && sentientKinds.Count > 0 && sentientKinds.TryGetValue(sentient, out DmsRaceKind kind) ? kind : DmsRaceKind.None;
+        }
+
+        private static bool HasMechApparelComp(ThingDef race)
+        {
+            return race?.comps != null && race.comps.Any(c => IsMechApparelComp(CompSignature.Of(c)));
+        }
+
+        public static bool CanWearApparel(ThingDef race)
+        {
+            return race != null && apparelRaces.Count > 0 && apparelRaces.Contains(race);
+        }
+
+        public static bool CanWearApparel(Pawn pawn)
+        {
+            return pawn != null && CanWearApparel(pawn.def);
         }
 
         internal static void LogSummary()
@@ -239,6 +264,10 @@ namespace Mechanoid_Sentience
             if (hasInteracte && !hasSwitch)
             {
                 yield return "has the interaction comp without the dead man's switch comp it depends on";
+            }
+            if (kind == DmsRaceKind.HumanlikeAutomatroid && !signatures.Any(IsMechApparelComp))
+            {
+                yield return "a humanlike mech without the apparel comp; its sentient clone cannot wear apparel";
             }
         }
 

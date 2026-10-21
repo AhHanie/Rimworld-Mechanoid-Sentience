@@ -10,7 +10,7 @@ namespace Mechanoid_Sentience
         [HarmonyPostfix]
         public static void Postfix(Pawn p, ref bool __result)
         {
-            if (__result && SentientMechRegistry.IsSentient(p))
+            if (__result && SentientMechRegistry.IsSentient(p) && !DeadMansSwitchCompat.CanWearApparel(p))
             {
                 __result = false;
             }

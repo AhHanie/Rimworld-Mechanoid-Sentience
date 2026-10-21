@@ -16,6 +16,8 @@ namespace Mechanoid_Sentience
             "ThoughtWorker_NoThroneroom", "ThoughtWorker_ThroneRoomRequirementsNotMet", "ThoughtWorker_RoyalTitleApparelRequirementNotMet"
         };
 
+        private const string RoyalApparelWorkerName = "ThoughtWorker_RoyalTitleApparelRequirementNotMet";
+
         private static HashSet<ThoughtDef> blockedThoughts;
 
         [HarmonyPostfix]
@@ -37,7 +39,7 @@ namespace Mechanoid_Sentience
                     }
                 }
             }
-            if (blockedThoughts.Contains(def))
+            if (blockedThoughts.Contains(def) && !(def.workerClass?.Name == RoyalApparelWorkerName && DeadMansSwitchCompat.CanWearApparel(pawn)))
             {
                 __result = false;
             }

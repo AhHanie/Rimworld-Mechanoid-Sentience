@@ -140,7 +140,10 @@ namespace Mechanoid_Sentience
                 pawn.SetFaction(Faction.OfPlayer);
             }
 
-            pawn.apparel?.DropAll(pawn.Position, forbid: false);
+            if (!DeadMansSwitchCompat.CanWearApparel(pawn))
+            {
+                pawn.apparel?.DropAll(pawn.Position, forbid: false);
+            }
             RemoveOverseerComp(pawn, map);
 
             state.Stage = ConversionStage.Despawned;

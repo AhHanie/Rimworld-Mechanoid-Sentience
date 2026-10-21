@@ -10,7 +10,7 @@ namespace Mechanoid_Sentience
         [HarmonyPrefix]
         public static bool Prefix(Pawn ___pawn, Apparel newApparel)
         {
-            if (!SentientMechRegistry.IsSentient(___pawn))
+            if (!SentientMechRegistry.IsSentient(___pawn) || DeadMansSwitchCompat.CanWearApparel(___pawn))
             {
                 return true;
             }

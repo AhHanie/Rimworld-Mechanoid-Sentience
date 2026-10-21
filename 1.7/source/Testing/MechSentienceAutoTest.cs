@@ -312,8 +312,15 @@ namespace Mechanoid_Sentience
             {
                 WorkModesAutoTest.Run(Spawn);
             }
-            HackingExpansionAutoTest.RunPure();
-            GlittertechExpansionAutoTest.RunPure();
+            Log.Message("AUTOTEST info Hacking Expansion active=" + HackingExpansionCompat.IsActive + ", Glittertech Expansion active=" + GlittertechExpansionCompat.IsActive);
+            if (HackingExpansionCompat.IsActive)
+            {
+                HackingExpansionAutoTest.RunPure();
+            }
+            if (GlittertechExpansionCompat.IsActive)
+            {
+                GlittertechExpansionAutoTest.RunPure();
+            }
             RechargeAutoTest.Run(Spawn);
             CheckSpecialtySkills(Spawn);
             CheckWeaponLock(Spawn);

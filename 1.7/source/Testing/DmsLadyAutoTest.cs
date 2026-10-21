@@ -1,5 +1,6 @@
 #if DEBUG
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using RimWorld;
@@ -57,10 +58,23 @@ namespace Mechanoid_Sentience
             RenderSnapshot before = Measure(lady);
             Log.Message("AUTOTEST info Lady before conversion " + before.Text);
             Check(before.BodyNode && before.HeadNode, "ordinary Lady has body and head render nodes");
+            Check(DeadMansSwitchCompat.CanWearApparel(lady), "the original Lady race is apparel capable");
 
             int ownershipBefore = lady.AllComps.Count(c => DeadMansSwitchCompat.IsOwnershipComp(CompSignature.Of(c.props)));
+            ThingComp apparelComp = ApparelComp(lady);
+            Check(apparelComp != null && lady.AllComps.Count(c => DeadMansSwitchCompat.IsMechApparelComp(CompSignature.Of(c.props))) == 1, "ordinary Lady has exactly one apparel comp");
+            Apparel shirt = Dress(lady, locked: true, "Apparel_CollarShirt");
+            Check(shirt != null && lady.apparel.WornApparel.Contains(shirt), "Lady was dressed in " + shirt?.ToStringSafe());
+            List<Apparel> worn = lady.apparel.WornApparel.ToList();
+            var wornIds = worn.Select(a => a.ThingID).ToList();
+            var wornHitPoints = worn.Select(a => a.HitPoints).ToList();
+            bool shirtLocked = shirt != null && lady.apparel.IsLocked(shirt);
             Check(SentientMechConverter.TryConvert(lady, showMessages: false), "Lady converted");
-            Check(ownershipBefore == 3 && lady.AllComps.Count(c => DeadMansSwitchCompat.IsOwnershipComp(CompSignature.Of(c.props))) == 0, "Lady lost her three ownership comps (had " + ownershipBefore + ")");
+            Check(ownershipBefore == 2 && lady.AllComps.Count(c => DeadMansSwitchCompat.IsOwnershipComp(CompSignature.Of(c.props))) == 0, "Lady lost her two ownership comps (had " + ownershipBefore + ")");
+            Check(ReferenceEquals(ApparelComp(lady), apparelComp) && lady.AllComps.Count(c => DeadMansSwitchCompat.IsMechApparelComp(CompSignature.Of(c.props))) == 1, "Lady kept the same, single apparel comp instance");
+            Check(DeadMansSwitchCompat.CanWearApparel(lady), "the sentient Lady race is apparel capable");
+            CheckWorn(lady, worn, wornIds, wornHitPoints, shirt, shirtLocked, "converted Lady");
+            CheckWearing(lady, spawn);
 
             RenderSnapshot after = Measure(lady);
             Log.Message("AUTOTEST info Lady after conversion " + after.Text);
@@ -73,12 +87,83 @@ namespace Mechanoid_Sentience
 
             Pawn rolledBack = spawn(LadyKindName);
             int comps = rolledBack.AllComps.Count;
+            ThingComp rolledBackApparelComp = ApparelComp(rolledBack);
+            Apparel rolledBackShirt = Dress(rolledBack, locked: true, "Apparel_CollarShirt");
+            List<Apparel> rolledBackWorn = rolledBack.apparel.WornApparel.ToList();
+            var rolledBackIds = rolledBackWorn.Select(a => a.ThingID).ToList();
+            var rolledBackHitPoints = rolledBackWorn.Select(a => a.HitPoints).ToList();
+            bool rolledBackLocked = rolledBackShirt != null && rolledBack.apparel.IsLocked(rolledBackShirt);
             Log.Message("AUTOTEST info the next error line from SentientMechConverter (forced failure) is expected");
             SentientMechConverter.ForceFailureForTesting = true;
             bool converted = SentientMechConverter.TryConvert(rolledBack, showMessages: false);
             SentientMechConverter.ForceFailureForTesting = false;
             Check(!converted && !SentientMechRegistry.IsSentient(rolledBack) && rolledBack.AllComps.Count == comps, "forced failure restores the Lady and her comps");
             Compare(before, Measure(rolledBack), "rolled back Lady");
+            Check(rolledBack.AllComps.Count(c => DeadMansSwitchCompat.IsOwnershipComp(CompSignature.Of(c.props))) == 2 && ReferenceEquals(ApparelComp(rolledBack), rolledBackApparelComp), "rolled back Lady has her ownership comps and the same apparel comp instance again");
+            CheckWorn(rolledBack, rolledBackWorn, rolledBackIds, rolledBackHitPoints, rolledBackShirt, rolledBackLocked, "rolled back Lady");
+        }
+
+        private static ThingComp ApparelComp(Pawn pawn)
+        {
+            return pawn.AllComps.FirstOrDefault(c => DeadMansSwitchCompat.IsMechApparelComp(CompSignature.Of(c.props)));
+        }
+
+        private static Apparel Dress(Pawn pawn, bool locked, string preferredDefName)
+        {
+            ThingDef def = DefDatabase<ThingDef>.GetNamedSilentFail(preferredDefName);
+            if (def == null || !CanWear(pawn, def))
+            {
+                def = DefDatabase<ThingDef>.AllDefsListForReading.FirstOrDefault(d => CanWear(pawn, d));
+            }
+            if (def == null)
+            {
+                return null;
+            }
+            var apparel = (Apparel)ThingMaker.MakeThing(def, GenStuff.DefaultStuffFor(def));
+            pawn.apparel.Wear(apparel, dropReplacedApparel: true, locked: locked);
+            return apparel;
+        }
+
+        private static bool CanWear(Pawn pawn, ThingDef def)
+        {
+            return def.IsApparel && def.apparel.PawnCanWear(pawn, ignoreGender: true) && ApparelUtility.HasPartsToWear(pawn, def)
+                && pawn.apparel.WornApparel.All(a => ApparelUtility.CanWearTogether(a.def, def, pawn.RaceProps.body));
+        }
+
+        private static void CheckWorn(Pawn pawn, List<Apparel> expected, List<string> ids, List<int> hitPoints, Apparel locked, bool wasLocked, string what)
+        {
+            Check(expected.Count > 0, what + " was wearing something");
+            Check(pawn.apparel.WornApparel.Count == expected.Count && expected.All(a => pawn.apparel.WornApparel.Contains(a)), what + " wears exactly the same apparel instances (" + pawn.apparel.WornApparel.Count + " of " + expected.Count + ")");
+            Check(expected.Select(a => a.ThingID).SequenceEqual(ids) && expected.Select(a => a.HitPoints).SequenceEqual(hitPoints), what + " kept every item's ThingID and hit points");
+            Check(expected.All(a => !a.Spawned && a.Map == null && a.ParentHolder == pawn.apparel), what + " has no worn item on the ground");
+            Check(locked == null || pawn.apparel.IsLocked(locked) == wasLocked, what + " keeps the lock state of its locked item (" + wasLocked + ")");
+            Check(pawn.Map == null || !pawn.Map.listerThings.AllThings.Any(t => t is Apparel a && ids.Contains(a.ThingID)), what + " has no copy of its apparel on the map");
+        }
+
+        private static void CheckWearing(Pawn lady, Func<string, Pawn> spawn)
+        {
+            ThingDef pantsDef = DefDatabase<ThingDef>.GetNamedSilentFail("Apparel_Pants");
+            if (pantsDef != null && CanWear(lady, pantsDef))
+            {
+                var pants = (Apparel)ThingMaker.MakeThing(pantsDef, GenStuff.DefaultStuffFor(pantsDef));
+                lady.apparel.Wear(pants);
+                Check(lady.apparel.WornApparel.Contains(pants), "converted Lady wears new compatible apparel");
+                Check(ApparelUtility.HasPartsToWear(lady, pantsDef), "the vanilla body check answers for the converted Lady");
+            }
+            else
+            {
+                Log.Message("AUTOTEST info no second wearable apparel for the converted Lady, wear check skipped");
+            }
+
+            Pawn militor = spawn("Mech_Militor");
+            Check(SentientMechConverter.TryConvert(militor, showMessages: false), "ordinary mech converted for the apparel guard check");
+            ThingDef shirtDef = DefDatabase<ThingDef>.GetNamedSilentFail("Apparel_CollarShirt") ?? DefDatabase<ThingDef>.AllDefsListForReading.First(d => d.IsApparel);
+            var shirt = (Apparel)ThingMaker.MakeThing(shirtDef, GenStuff.DefaultStuffFor(shirtDef));
+            GenSpawn.Spawn(shirt, militor.Position, militor.Map);
+            Check(!DeadMansSwitchCompat.CanWearApparel(militor) && !ApparelUtility.HasPartsToWear(militor, shirtDef), "an ordinary sentient mech has no apparel capability");
+            Log.Message("AUTOTEST info the next warning from Mechanoid Sentience (sentient mechanoid cannot wear) is expected");
+            militor.apparel.Wear(shirt);
+            Check(shirt.Spawned && militor.apparel.WornApparel.Count == 0, "an ordinary sentient mech leaves the apparel where it was");
         }
 
         private static void Compare(RenderSnapshot before, RenderSnapshot after, string what)
