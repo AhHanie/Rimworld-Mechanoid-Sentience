@@ -19,6 +19,10 @@ namespace Mechanoid_Sentience
 
         public static Action<Pawn> AfterSwapForTesting;
 
+        public static bool ForceFailureAfterProgressionForTesting;
+
+        public static Action<Pawn> AfterProgressionForTesting;
+
         public static AcceptanceReport CanConvert(Pawn pawn)
         {
             return CanConvert(pawn, out _, out _);
@@ -149,7 +153,7 @@ namespace Mechanoid_Sentience
             state.Stage = ConversionStage.Despawned;
             pawn.DeSpawn();
 
-            SwapToSentientDefs(pawn, sentientRace, sentientKind, dmsKind);
+            IsekaiLevelingCompat.Progression progression = SwapToSentientDefs(pawn, sentientRace, sentientKind, dmsKind);
 
             AfterSwapForTesting?.Invoke(pawn);
             if (ForceFailureForTesting)
@@ -159,6 +163,14 @@ namespace Mechanoid_Sentience
             }
 
             BuildSentientIdentity(pawn);
+
+            IsekaiLevelingCompat.ApplyProgression(pawn, progression);
+            AfterProgressionForTesting?.Invoke(pawn);
+            if (ForceFailureAfterProgressionForTesting)
+            {
+                ForceFailureAfterProgressionForTesting = false;
+                throw new InvalidOperationException("Forced failure after carrying over Isekai Leveling progression (SentientMechConverter.ForceFailureAfterProgressionForTesting).");
+            }
 
             GenSpawn.Spawn(pawn, state.Cell, map, state.Rotation, WipeMode.Vanish, respawningAfterLoad: false);
             state.Stage = ConversionStage.Respawned;
@@ -181,21 +193,24 @@ namespace Mechanoid_Sentience
         {
             DmsRaceKind dmsKind = DeadMansSwitchCompat.KindOfOriginal(pawn.def);
             RemoveOverseerComp(pawn, null);
-            SwapToSentientDefs(pawn, sentientRace, sentientKind, dmsKind);
+            IsekaiLevelingCompat.Progression progression = SwapToSentientDefs(pawn, sentientRace, sentientKind, dmsKind);
             BuildSentientIdentity(pawn);
+            IsekaiLevelingCompat.ApplyProgression(pawn, progression);
             pawn.Drawer.renderer.SetAllGraphicsDirty();
             PortraitsCache.SetDirty(pawn);
             GlobalTextureAtlasManager.TryMarkPawnFrameSetDirty(pawn);
         }
 
-        private static void SwapToSentientDefs(Pawn pawn, ThingDef sentientRace, PawnKindDef sentientKind, DmsRaceKind dmsKind)
+        private static IsekaiLevelingCompat.Progression SwapToSentientDefs(Pawn pawn, ThingDef sentientRace, PawnKindDef sentientKind, DmsRaceKind dmsKind)
         {
             RemoveDeadMansSwitchComps(pawn, dmsKind);
             RemoveOverseerBoundComps(pawn);
             RemoveHackTargetComps(pawn);
+            IsekaiLevelingCompat.Progression progression = RemoveMobRankComps(pawn);
             pawn.def = sentientRace;
             pawn.kindDef = sentientKind;
             ReconcileComps(pawn, sentientRace);
+            return progression;
         }
 
         private static void BuildSentientIdentity(Pawn pawn)
@@ -305,6 +320,23 @@ namespace Mechanoid_Sentience
             }
             SetComps(pawn, kept);
             Logger.Message("Removed " + removed.Count + " Hacking Expansion hack target comp(s) from " + pawn.ToStringSafe() + ": " + removed.Select(c => c.GetType().FullName).ToCommaList());
+        }
+
+        private static IsekaiLevelingCompat.Progression RemoveMobRankComps(Pawn pawn)
+        {
+            if (!IsekaiLevelingCompat.IsAvailable || !(CompsField.GetValue(pawn) is List<ThingComp> live))
+            {
+                return null;
+            }
+            List<ThingComp> kept = IsekaiLevelingCompat.WithoutMobRankComps(live, out List<ThingComp> removed);
+            if (removed.Count == 0)
+            {
+                return null;
+            }
+            IsekaiLevelingCompat.Progression progression = IsekaiLevelingCompat.CaptureProgression(removed);
+            SetComps(pawn, kept);
+            Logger.Message("Removed " + removed.Count + " Isekai Leveling creature rank comp(s) from " + pawn.ToStringSafe() + (progression != null ? ", carrying over " + progression : ", with no earned progression to carry over") + ".");
+            return progression;
         }
 
         private static void ReconcileComps(Pawn pawn, ThingDef sentientRace)

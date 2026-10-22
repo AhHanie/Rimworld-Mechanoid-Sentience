@@ -125,6 +125,10 @@ namespace Mechanoid_Sentience
             {
                 vefExtras++;
             }
+            foreach (string problem in IsekaiLevelingCompat.RaceProblems(sentient))
+            {
+                yield return problem;
+            }
             if (dmsKind == DmsRaceKind.HumanlikeAutomatroid && (sentient.inspectorTabs == null || !sentient.inspectorTabs.Contains(typeof(ITab_Pawn_Character)) || !sentient.inspectorTabs.Contains(typeof(ITab_Pawn_Social))))
             {
                 yield return "humanlike Dead Man's Switch mech lacks the Character or Social tab";

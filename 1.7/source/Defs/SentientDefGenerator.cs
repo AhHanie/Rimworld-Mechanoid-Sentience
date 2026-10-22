@@ -128,6 +128,8 @@ namespace Mechanoid_Sentience
                 clone.comps.Add(new CompProperties_SentientApocritonPassiveRecharge());
             }
 
+            IsekaiLevelingCompat.AddHumanlikeProperties(clone);
+
             clone.statBases?.RemoveAll(s => s.stat == StatDefOf.WorkSpeedGlobal);
 
             AddExtension(clone, original.defName);

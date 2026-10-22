@@ -150,6 +150,10 @@ namespace Mechanoid_Sentience
                         {
                             RimpsycheAutoTest.MarkForSave(pawn);
                         }
+                        if (IsekaiLevelingAutoTest.IsActive)
+                        {
+                            IsekaiLevelingAutoTest.MarkForSave();
+                        }
                         snapshot = Snapshot(pawn);
                         sentientThingId = pawn.thingIDNumber;
                         Log.Message("AUTOTEST info snapshot " + snapshot);
@@ -194,6 +198,10 @@ namespace Mechanoid_Sentience
                             if (WorkModesCompat.IsActive)
                             {
                                 WorkModesAutoTest.CheckAfterLoad(pawn);
+                            }
+                            if (IsekaiLevelingAutoTest.IsActive)
+                            {
+                                IsekaiLevelingAutoTest.CheckAfterLoad(Find.CurrentMap);
                             }
                             if (GestatableApocritonCompat.IsAvailable)
                             {
@@ -320,6 +328,12 @@ namespace Mechanoid_Sentience
             if (GlittertechExpansionCompat.IsActive)
             {
                 GlittertechExpansionAutoTest.RunPure();
+            }
+            Log.Message("AUTOTEST info Isekai Leveling active=" + IsekaiLevelingAutoTest.IsActive);
+            if (IsekaiLevelingAutoTest.IsActive)
+            {
+                IsekaiLevelingAutoTest.RunStartup();
+                IsekaiLevelingAutoTest.Run(Spawn);
             }
             RechargeAutoTest.Run(Spawn);
             CheckSpecialtySkills(Spawn);

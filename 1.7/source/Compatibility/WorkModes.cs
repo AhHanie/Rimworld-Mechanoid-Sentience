@@ -109,6 +109,7 @@ namespace Mechanoid_Sentience
         {
             return WorkModesCompat.IsOverseerBoundComp(signature)
                 || HackingExpansionCompat.IsTargetComp(signature)
+                || IsekaiLevelingCompat.IsMobRankComp(signature)
                 || DeadMansSwitchCompat.IsRemovedFromSentient(dmsKind, signature);
         }
     }

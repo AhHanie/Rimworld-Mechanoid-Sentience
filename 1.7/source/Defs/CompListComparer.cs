@@ -31,6 +31,8 @@ namespace Mechanoid_Sentience
         public bool IsRimpsychePsyche => PropsType != null && CompClass != null
             && PropsType.FullName == CompListComparer.RimpsychePropsTypeName && CompClass.FullName == CompListComparer.RimpsycheCompClassName;
 
+        public bool IsIsekaiHumanlike => IsekaiLevelingCompat.IsHumanlikeComp(this);
+
         public bool IsSentientRecharge => PropsType == typeof(CompProperties_SentientRecharge) && CompClass == typeof(CompSentientRecharge);
 
         public bool IsSentientApocritonCoreRecharge => PropsType == typeof(CompProperties_SentientApocritonCoreRecharge) && CompClass == typeof(CompSentientApocritonCoreRecharge);
@@ -150,6 +152,7 @@ namespace Mechanoid_Sentience
             int vefCount = 0;
             int guestCount = 0;
             int psycheCount = 0;
+            int isekaiCount = 0;
             int apocritonCount = 0;
             int passiveCount = 0;
             for (int i = expected.Count; i < actual.Count; i++)
@@ -208,6 +211,15 @@ namespace Mechanoid_Sentience
                     if (psycheCount > 1)
                     {
                         return "Entry " + i + " is a duplicate of the Rimpsyche psyche comp " + actual[i] + ".";
+                    }
+                    continue;
+                }
+                if (actual[i].IsIsekaiHumanlike)
+                {
+                    isekaiCount++;
+                    if (isekaiCount > 1)
+                    {
+                        return "Entry " + i + " is a duplicate of the Isekai Leveling humanlike progression comp " + actual[i] + ".";
                     }
                     continue;
                 }
