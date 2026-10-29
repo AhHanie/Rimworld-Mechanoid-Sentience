@@ -20,6 +20,12 @@ namespace Mechanoid_Sentience
                 __result = false;
                 return;
             }
+            if (SentientMechWeaponRules.CannotEquipWeapons(pawn))
+            {
+                cantReason = SentientMechWeaponRules.CannotEquipReason(pawn);
+                __result = false;
+                return;
+            }
             if (thing.def.equipmentType != EquipmentType.Primary)
             {
                 return;

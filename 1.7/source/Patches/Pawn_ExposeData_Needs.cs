@@ -12,6 +12,7 @@ namespace Mechanoid_Sentience
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 SentientMechNeeds.MigrateLoadedPawn(__instance);
+                SentientMechWeaponRules.Disarm(__instance, allowDrop: false);
             }
         }
     }

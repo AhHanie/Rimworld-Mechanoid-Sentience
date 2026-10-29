@@ -14,6 +14,12 @@ namespace Mechanoid_Sentience
             {
                 return true;
             }
+            if (SentientMechWeaponRules.CannotEquipWeapons(___pawn))
+            {
+                Logger.Warning(___pawn + " is a sentient mechanoid whose chassis cannot hold weapons and cannot equip " + newEq);
+                PutBack(___pawn, newEq);
+                return false;
+            }
             if (!newEq.def.IsWeapon)
             {
                 Logger.Warning(___pawn + " is a sentient mechanoid and cannot equip the non-weapon " + newEq);
@@ -32,14 +38,19 @@ namespace Mechanoid_Sentience
 
         private static void PutBack(Pawn pawn, ThingWithComps thing)
         {
-            if (pawn.MapHeld != null)
+            if (thing.holdingOwner != null || thing.Spawned || thing.Destroyed)
             {
-                GenPlace.TryPlaceThing(thing, pawn.PositionHeld, pawn.MapHeld, ThingPlaceMode.Near);
+                return;
             }
-            else
+            if (pawn.MapHeld != null && GenPlace.TryPlaceThing(thing, pawn.PositionHeld, pawn.MapHeld, ThingPlaceMode.Near))
             {
-                pawn.inventory.innerContainer.TryAdd(thing);
+                return;
             }
+            if (pawn.inventory?.innerContainer != null && pawn.inventory.innerContainer.TryAdd(thing))
+            {
+                return;
+            }
+            Logger.Warning("Nowhere to put " + thing + " refused by " + pawn + "; it was left unplaced.");
         }
     }
 }

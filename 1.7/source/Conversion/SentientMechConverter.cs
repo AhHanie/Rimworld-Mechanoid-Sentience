@@ -175,6 +175,8 @@ namespace Mechanoid_Sentience
             GenSpawn.Spawn(pawn, state.Cell, map, state.Rotation, WipeMode.Vanish, respawningAfterLoad: false);
             state.Stage = ConversionStage.Respawned;
 
+            SentientMechWeaponRules.Disarm(pawn, allowDrop: true);
+
             SentientMetalhorror.RemoveMetalhorrorImplants(pawn);
 
             HackingExpansionCompat.RemoveDisabledHediff(pawn);
@@ -196,6 +198,10 @@ namespace Mechanoid_Sentience
             IsekaiLevelingCompat.Progression progression = SwapToSentientDefs(pawn, sentientRace, sentientKind, dmsKind);
             BuildSentientIdentity(pawn);
             IsekaiLevelingCompat.ApplyProgression(pawn, progression);
+            if (!SentientMechWeaponRules.Disarm(pawn, allowDrop: false))
+            {
+                throw new InvalidOperationException(pawn.ToStringSafe() + " could not be taken off its equipment.");
+            }
             pawn.Drawer.renderer.SetAllGraphicsDirty();
             PortraitsCache.SetDirty(pawn);
             GlobalTextureAtlasManager.TryMarkPawnFrameSetDirty(pawn);

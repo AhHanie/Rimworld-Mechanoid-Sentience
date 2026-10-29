@@ -184,6 +184,7 @@ namespace Mechanoid_Sentience
                     {
                         Pawn pawn = FindSentient();
                         Check(pawn != null && pawn.thingIDNumber == sentientThingId, "same pawn (ThingID " + sentientThingId + ") after reload");
+                        WeaponlessAutoTest.VerifyAfterLoad(Find.CurrentMap);
                         Pawn downedMech = Find.CurrentMap.mapPawns.AllPawnsSpawned.FirstOrDefault(p => p.thingIDNumber == downedMechId);
                         Check(downedMech != null && downedMech.Downed && downedMech.equipment?.Primary != null && downedMech.equipment.Primary.thingIDNumber == downedWeaponId, "downed lancer still has the same weapon after save and load (found=" + (downedMech != null) + ", downed=" + downedMech?.Downed + ", dead=" + downedMech?.Dead + ", weapon=" + (downedMech?.equipment?.Primary?.ToStringSafe() ?? "none") + ", expected id " + downedWeaponId + ")");
                         if (pawn != null)
@@ -338,6 +339,7 @@ namespace Mechanoid_Sentience
             RechargeAutoTest.Run(Spawn);
             CheckSpecialtySkills(Spawn);
             CheckWeaponLock(Spawn);
+            WeaponlessAutoTest.Run(Spawn);
             CheckSentientCorpseFilters();
             CheckRealSentientCorpses(Spawn);
             CheckMetalhorrorExclusion(Spawn);

@@ -11,6 +11,11 @@ namespace Mechanoid_Sentience
         [HarmonyPrefix]
         public static bool Prefix(JobDriver_Equip __instance, ref bool __result)
         {
+            if (SentientMechWeaponRules.CannotEquipWeapons(__instance.pawn))
+            {
+                __result = false;
+                return false;
+            }
             ThingWithComps locked = SentientMechUtility.LockedPrimary(__instance.pawn);
             if (locked == null)
             {

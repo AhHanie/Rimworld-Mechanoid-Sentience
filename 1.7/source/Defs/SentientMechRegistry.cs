@@ -77,6 +77,11 @@ namespace Mechanoid_Sentience
             return sentientRace != null && sentientToRace.Count > 0 && sentientToRace.TryGetValue(sentientRace, out ThingDef original) ? original : null;
         }
 
+        public static ThingDef SentientOf(ThingDef originalRace)
+        {
+            return originalRace != null && raceToSentient.TryGetValue(originalRace, out ThingDef sentient) ? sentient : null;
+        }
+
         internal static void Register(ThingDef original, ThingDef sentient)
         {
             if (frozen)

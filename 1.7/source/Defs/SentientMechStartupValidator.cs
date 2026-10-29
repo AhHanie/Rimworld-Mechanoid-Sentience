@@ -27,6 +27,7 @@ namespace Mechanoid_Sentience
             }
             validated = true;
             SentientMechRegistry.EnsureIndexTableCurrent();
+            SentientMechWeaponRules.Rebuild(logProblems: true);
             int checkedPairs = 0;
             foreach (ThingDef sentient in SentientMechRegistry.SentientRaces)
             {

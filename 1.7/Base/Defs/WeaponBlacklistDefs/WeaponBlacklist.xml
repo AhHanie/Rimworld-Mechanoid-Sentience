@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+
+  <Mechanoid_Sentience.SentientWeaponBlacklistDef>
+    <defName>MS_WeaponlessMechanoids</defName>
+    <races>
+      <li>Mech_Scyther</li>
+    </races>
+  </Mechanoid_Sentience.SentientWeaponBlacklistDef>
+
+</Defs>

@@ -13,7 +13,8 @@ namespace Mechanoid_Sentience
         {
             "ThoughtWorker_Greedy", "ThoughtWorker_BedroomJealous", "ThoughtWorker_Precept_HighLife", "ThoughtWorker_Precept_Scarification",
             "ThoughtWorker_Precept_HasNoProsthetic", "ThoughtWorker_NoPersonalBedroom", "ThoughtWorker_BedroomRequirementsNotMet",
-            "ThoughtWorker_NoThroneroom", "ThoughtWorker_ThroneRoomRequirementsNotMet", "ThoughtWorker_RoyalTitleApparelRequirementNotMet"
+            "ThoughtWorker_NoThroneroom", "ThoughtWorker_ThroneRoomRequirementsNotMet", "ThoughtWorker_RoyalTitleApparelRequirementNotMet",
+            "ThoughtWorker_Cold", "ThoughtWorker_Hot"
         };
 
         private const string RoyalApparelWorkerName = "ThoughtWorker_RoyalTitleApparelRequirementNotMet";
