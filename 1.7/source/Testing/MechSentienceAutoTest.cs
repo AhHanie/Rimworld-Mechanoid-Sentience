@@ -321,6 +321,8 @@ namespace Mechanoid_Sentience
             {
                 WorkModesAutoTest.Run(Spawn);
             }
+            Log.Message("AUTOTEST info [KCB] Mini Expeditions active=" + (HarmonyLib.AccessTools.TypeByName(CompListComparer.ExpeditionPropsTypeName) != null));
+            ExpeditionAutoTest.RunPure();
             Log.Message("AUTOTEST info Hacking Expansion active=" + HackingExpansionCompat.IsActive + ", Glittertech Expansion active=" + GlittertechExpansionCompat.IsActive);
             if (HackingExpansionCompat.IsActive)
             {

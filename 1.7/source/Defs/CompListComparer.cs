@@ -39,6 +39,9 @@ namespace Mechanoid_Sentience
 
         public bool IsSentientApocritonPassiveRecharge => PropsType == typeof(CompProperties_SentientApocritonPassiveRecharge) && CompClass == typeof(CompSentientApocritonPassiveRecharge);
 
+        public bool IsExpeditionCancel => PropsType != null && CompClass != null
+            && PropsType.FullName == CompListComparer.ExpeditionPropsTypeName && CompClass.FullName == CompListComparer.ExpeditionCompClassName;
+
         public bool Equals(CompSignature other)
         {
             return PropsType == other.PropsType && CompClass == other.CompClass;
@@ -72,6 +75,8 @@ namespace Mechanoid_Sentience
         public const string HospitalityCompClassName = "Hospitality.CompGuest";
         public const string RimpsychePropsTypeName = RimpsycheCompat.PropsTypeName;
         public const string RimpsycheCompClassName = RimpsycheCompat.CompTypeName;
+        public const string ExpeditionPropsTypeName = "KCBExpedition.CompProperties_ExCancel";
+        public const string ExpeditionCompClassName = "KCBExpedition.CompExCancel";
 
         public static string FirstDifference(IList<CompProperties> original, IList<CompProperties> sentient, out bool hasVefExtra)
         {
@@ -88,8 +93,41 @@ namespace Mechanoid_Sentience
                 return null;
             }
             string label = isAllowedRemoval == null ? "Source without overseer subject, plus the sentient recharge comp" : "Source without overseer subject and allowed removals, plus the sentient recharge comp";
-            return difference + " " + label + " (" + expected.Count + "): " + Format(expected)
+            string note = "";
+            if (TryExpeditionNormalization(original, actual, isAllowedRemoval, out List<CompSignature> normalizedExpected, out List<CompSignature> normalizedActual))
+            {
+                string normalizedDifference = Difference(normalizedExpected, normalizedActual, out bool normalizedVefExtra);
+                if (normalizedDifference == null)
+                {
+                    hasVefExtra = normalizedVefExtra;
+                    return null;
+                }
+                hasVefExtra = false;
+                difference = normalizedDifference;
+                note = " (after setting aside the Expedition cancel comp that [KCB] Mini Expeditions appends after the recharge comp; the sequences below still include it)";
+            }
+            return difference + note + " " + label + " (" + expected.Count + "): " + Format(expected)
                 + ". Sentient (" + actual.Count + "): " + Format(actual) + ".";
+        }
+
+        private static bool TryExpeditionNormalization(IList<CompProperties> original, List<CompSignature> actual, Func<CompSignature, bool> isAllowedRemoval, out List<CompSignature> normalizedExpected, out List<CompSignature> normalizedActual)
+        {
+            normalizedExpected = null;
+            normalizedActual = null;
+            List<CompProperties> source = original == null ? new List<CompProperties>() : original.ToList();
+            if (source.Count(c => CompSignature.Of(c).IsExpeditionCancel) != 1 || actual.Count(s => s.IsExpeditionCancel) != 1)
+            {
+                return false;
+            }
+            int expeditionIndex = actual.FindIndex(s => s.IsExpeditionCancel);
+            int rechargeIndex = actual.FindIndex(s => s.IsSentientRecharge);
+            if (rechargeIndex < 0 || expeditionIndex < rechargeIndex)
+            {
+                return false;
+            }
+            normalizedExpected = ExpectedBase(source.Where(c => !CompSignature.Of(c).IsExpeditionCancel).ToList(), isAllowedRemoval);
+            normalizedActual = actual.Where((s, i) => i != expeditionIndex).ToList();
+            return true;
         }
 
         public static List<CompSignature> ExpectedBase(IList<CompProperties> original)
