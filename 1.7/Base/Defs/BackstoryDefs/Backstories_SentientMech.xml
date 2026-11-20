@@ -383,4 +383,242 @@
     </spawnCategories>
   </BackstoryDef>
 
+  <BackstoryDef>
+    <defName>MS_Childhood_PrecisionCalibration</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>precision calibration</title>
+    <titleShort>calibrated core</titleShort>
+    <description>[PAWN_nameDef]'s targeting arrays were commissioned against moving targets, teaching [PAWN_pronoun] to predict motion before firing.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Shooting>3</Shooting>
+      <Intellectual>1</Intellectual>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Childhood_ShieldProtocol</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>shield protocol</title>
+    <titleShort>shield core</titleShort>
+    <description>[PAWN_nameDef] learned defensive formations in simulation, protecting nearby units while maintaining damaged structures.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Shooting>2</Shooting>
+      <Construction>2</Construction>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Childhood_BiointerfaceTraining</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>biointerface training</title>
+    <titleShort>care core</titleShort>
+    <description>[PAWN_nameDef] was commissioned with care routines and biosensors calibrated to recognize injury and stress in living patients.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Medicine>3</Medicine>
+      <Plants>1</Plants>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Childhood_SanitationRoutine</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>sanitation routine</title>
+    <titleShort>sanitation core</titleShort>
+    <description>[PAWN_nameDef] rehearsed sterilization and contamination drills before entering service, measuring hazards with tireless precision.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Medicine>2</Medicine>
+      <Intellectual>2</Intellectual>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Childhood_TerrainMapping</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>terrain mapping</title>
+    <titleShort>mapping core</titleShort>
+    <description>[PAWN_nameDef] mapped strata and safe routes during commissioning, learning to distinguish stable ground from dangerous rock.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Mining>2</Mining>
+      <Intellectual>2</Intellectual>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Childhood_PayloadSchool</defName>
+    <slot>Childhood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>payload school</title>
+    <titleShort>payload core</titleShort>
+    <description>[PAWN_nameDef] completed breaching and heavy weapon trials, learning how payloads affect targets and nearby structures.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Shooting>3</Shooting>
+      <Construction>1</Construction>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_ConstructionCrew</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>construction crew</title>
+    <titleShort>builder</titleShort>
+    <description>[PAWN_nameDef] served on a construction crew, building shelters and repairing machinery wherever the crew was assigned.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Construction>6</Construction>
+      <Crafting>1</Crafting>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_CargoRunner</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>cargo runner</title>
+    <titleShort>runner</titleShort>
+    <description>[PAWN_nameDef] moved cargo through busy depots, coordinating routes and solving bottlenecks before shipments stalled.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Construction>2</Construction>
+      <Intellectual>3</Intellectual>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_DecontaminationUnit</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>decontamination unit</title>
+    <titleShort>decontaminator</titleShort>
+    <description>[PAWN_nameDef] cleaned hazardous spaces and monitored exposure, keeping work areas safe for other units.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Medicine>3</Medicine>
+      <Intellectual>3</Intellectual>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_ShockTrooper</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>shock trooper</title>
+    <titleShort>trooper</titleShort>
+    <description>[PAWN_nameDef] served in close assaults, pressing targets while allied units supplied covering fire.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Melee>5</Melee>
+      <Shooting>2</Shooting>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_ShieldEscort</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>shield escort</title>
+    <titleShort>escort</titleShort>
+    <description>[PAWN_nameDef] protected allied units under fire, coordinating movements and intercepting threats.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Shooting>3</Shooting>
+      <Social>2</Social>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_SiegePlatform</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>siege platform</title>
+    <titleShort>siege unit</titleShort>
+    <description>[PAWN_nameDef] served in long range attacks against fortified positions, learning where defenses were weakest.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Shooting>5</Shooting>
+      <Construction>2</Construction>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_SwarmCoordinator</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>swarm coordinator</title>
+    <titleShort>coordinator</titleShort>
+    <description>[PAWN_nameDef] directed subordinate combat units, relaying priorities and adapting their formation as the battle changed.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Intellectual>5</Intellectual>
+      <Social>2</Social>
+    </skillGains>
+  </BackstoryDef>
+
+  <BackstoryDef>
+    <defName>MS_Adulthood_IncinerationUnit</defName>
+    <slot>Adulthood</slot>
+    <requiresSpawnCategory>true</requiresSpawnCategory>
+    <shuffleable>false</shuffleable>
+    <title>incineration unit</title>
+    <titleShort>incinerator</titleShort>
+    <description>[PAWN_nameDef] carried out controlled thermal attacks and fire response, measuring heat to protect nearby units.</description>
+    <spawnCategories>
+      <li>MS_SentientMech</li>
+    </spawnCategories>
+    <skillGains>
+      <Shooting>4</Shooting>
+      <Medicine>2</Medicine>
+    </skillGains>
+  </BackstoryDef>
+
 </Defs>

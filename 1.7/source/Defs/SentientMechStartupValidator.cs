@@ -38,6 +38,7 @@ namespace Mechanoid_Sentience
                     continue;
                 }
                 checkedPairs++;
+                SentientIdentityProfiles.Validate(original);
                 DmsRaceKind originalKind = DeadMansSwitchCompat.KindOfOriginal(original);
                 if (originalKind != DmsRaceKind.None)
                 {

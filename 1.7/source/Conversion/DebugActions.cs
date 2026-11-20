@@ -21,6 +21,9 @@ namespace Mechanoid_Sentience
                 return;
             }
             SentientMechGenerator.RegenerateSkills(pawn);
+            Messages.Message(pawn.LabelShort + " skills rerolled (" +
+                (ModSettings.UseIdentityProfiles && SentientIdentityProfiles.Resolve(pawn.def) != null ? "identity profile" : "original") +
+                " mode).", pawn, MessageTypeDefOf.NeutralEvent, historical: false);
         }
 
         [DebugAction("Pawns", "Make mechanoid sentient (force rollback)", requiresBiotech: true, actionType = DebugActionType.ToolMapForPawns, allowedGameStates = AllowedGameStates.PlayingOnMap, hideInSubMenu = true)]

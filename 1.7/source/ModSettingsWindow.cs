@@ -18,6 +18,10 @@ namespace Mechanoid_Sentience
                 ref ModSettings.UseCloseUpPortraits,
                 "MechanoidSentience.UseCloseUpPortraitsTooltip".Translate());
             listing.CheckboxLabeled(
+                "MechanoidSentience.UseIdentityProfiles".Translate(),
+                ref ModSettings.UseIdentityProfiles,
+                "MechanoidSentience.UseIdentityProfilesTooltip".Translate());
+            listing.CheckboxLabeled(
                 "MechanoidSentience.EnableDebugLogging".Translate(),
                 ref ModSettings.EnableDebugLogging,
                 "MechanoidSentience.EnableDebugLoggingTooltip".Translate());

@@ -47,17 +47,52 @@ namespace Mechanoid_Sentience
 
         public static void Generate(Pawn pawn)
         {
+            SentientIdentityProfileExtension profile = ActiveProfile(pawn);
             ApplyAppearanceDefaults(pawn);
-            GiveBackstories(pawn);
+            if (profile == null) GiveBackstories(pawn);
+            else
+            {
+                pawn.story.Childhood = profile.childhoodBackstories.RandomElement();
+                pawn.story.Adulthood = profile.adulthoodBackstories.RandomElement();
+            }
             GiveName(pawn);
-            List<SpecialtySkill> specialty = SentientMechSpecialty.Resolve(pawn);
-            GiveTraits(pawn, specialty);
+            List<SpecialtySkill> specialty = profile == null ? SentientMechSpecialty.Resolve(pawn) : new List<SpecialtySkill>();
+            GiveTraits(pawn, specialty, profile);
             GiveSkillsAndPassions(pawn, specialty);
+            if (profile != null) ApplyProfile(pawn, profile);
         }
 
         public static void RegenerateSkills(Pawn pawn)
         {
-            GiveSkillsAndPassions(pawn, SentientMechSpecialty.Resolve(pawn));
+            SentientIdentityProfileExtension profile = ActiveProfile(pawn);
+            GiveSkillsAndPassions(pawn, profile == null ? SentientMechSpecialty.Resolve(pawn) : new List<SpecialtySkill>());
+            if (profile != null) ApplyProfile(pawn, profile);
+        }
+
+        private static SentientIdentityProfileExtension ActiveProfile(Pawn pawn) =>
+            ModSettings.UseIdentityProfiles ? SentientIdentityProfiles.Resolve(pawn.def) : null;
+
+        private static void ApplyProfile(Pawn pawn, SentientIdentityProfileExtension profile)
+        {
+            foreach (SkillRecord record in pawn.skills.skills)
+            {
+                PreferredSkill preferred = profile.preferredSkills.FirstOrDefault(s => s.skill == record.def);
+                record.Level = preferred == null
+                    ? Rand.RangeInclusive(profile.defaultSkillMinLevel, profile.defaultSkillMaxLevel)
+                    : Rand.RangeInclusive(preferred.minLevel, preferred.maxLevel);
+            }
+            foreach (PreferredSkill preferred in profile.preferredSkills)
+            {
+                SkillRecord record = pawn.skills.GetSkill(preferred.skill);
+                if (record.TotallyDisabled || ConflictsWithPassion(pawn, preferred.skill))
+                {
+                    record.passion = Passion.None;
+                    continue;
+                }
+                int rolled = Rand.RangeInclusive(preferred.minPassion, preferred.maxPassion);
+                if (rolled == 0 && pawn.story.traits.allTraits.Any(t => t.def.RequiresPassion(preferred.skill))) rolled = 1;
+                record.passion = (Passion)rolled;
+            }
         }
 
         internal static void ApplyAppearanceDefaults(Pawn pawn)
@@ -145,7 +180,7 @@ namespace Mechanoid_Sentience
         private static BackstoryDef PickBackstory(BackstorySlot slot)
         {
             BackstoryDef result = DefDatabase<BackstoryDef>.AllDefs
-                .Where(b => b.slot == slot && b.spawnCategories.Contains(SentientDefGenerator.BackstoryCategory))
+                .Where(b => b.slot == slot && b.shuffleable && b.spawnCategories.Contains(SentientDefGenerator.BackstoryCategory))
                 .RandomElementWithFallback();
             if (result == null)
             {
@@ -165,7 +200,7 @@ namespace Mechanoid_Sentience
             pawn.Name = name;
         }
 
-        private static void GiveTraits(Pawn pawn, List<SpecialtySkill> specialty)
+        private static void GiveTraits(Pawn pawn, List<SpecialtySkill> specialty, SentientIdentityProfileExtension profile)
         {
             TraitSet traits = pawn.story.traits;
             foreach (BackstoryDef backstory in pawn.story.AllBackstories)
@@ -187,14 +222,14 @@ namespace Mechanoid_Sentience
             for (int attempt = 0; attempt < MaxTraitAttempts && traits.allTraits.Count < target; attempt++)
             {
                 Trait candidate = PawnGenerator.GenerateTraitsFor(pawn, 1).FirstOrDefault();
-                if (candidate != null && IsTraitAllowed(candidate, specialty))
+                if (candidate != null && IsTraitAllowed(candidate, specialty, profile))
                 {
                     traits.GainTrait(candidate);
                 }
             }
         }
 
-        private static bool IsTraitAllowed(Trait trait, List<SpecialtySkill> specialty)
+        private static bool IsTraitAllowed(Trait trait, List<SpecialtySkill> specialty, SentientIdentityProfileExtension profile)
         {
             if (ExcludedTraitDefNames.Contains(trait.def.defName))
             {
@@ -207,6 +242,8 @@ namespace Mechanoid_Sentience
                     return false;
                 }
             }
+            if (profile != null && profile.preferredSkills.Any(s => s.maxPassion > 0 && trait.def.ConflictsWithPassion(s.skill)))
+                return false;
             if (trait.def.defName == "PsychicSensitivity" && trait.Degree <= -2)
             {
                 return false;
@@ -318,6 +355,13 @@ namespace Mechanoid_Sentience
                 }
             }
         }
+
+#if DEBUG
+        internal static void GenerateBaselineSkillsForTesting(Pawn pawn)
+        {
+            GiveSkillsAndPassions(pawn, new List<SpecialtySkill>());
+        }
+#endif
 
         private static bool ConflictsWithPassion(Pawn pawn, SkillDef skill)
         {

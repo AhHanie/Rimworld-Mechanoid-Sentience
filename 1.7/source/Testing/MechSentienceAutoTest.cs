@@ -28,6 +28,9 @@ namespace Mechanoid_Sentience
         private static int runStartTick;
         private static int downedMechId;
         private static int downedWeaponId;
+        private static int catalystTargetId;
+        private static bool catalystSettingBefore;
+        private static bool catalystModePending;
 
         public MechSentienceAutoTest(Game game)
         {
@@ -65,6 +68,12 @@ namespace Mechanoid_Sentience
                     try
                     {
                         ConvertAndRollback();
+                        if (catalystTargetId != 0)
+                        {
+                            catalystSettingBefore = ModSettings.UseIdentityProfiles;
+                            ModSettings.UseIdentityProfiles = true;
+                            catalystModePending = true;
+                        }
                     }
                     catch (Exception e)
                     {
@@ -76,6 +85,18 @@ namespace Mechanoid_Sentience
                 case Step.Run:
                     if (Find.TickManager.TicksGame - runStartTick >= 1500)
                     {
+                        if (catalystTargetId != 0)
+                        {
+                            Pawn target = Find.CurrentMap.mapPawns.AllPawnsSpawned
+                                .FirstOrDefault(p => p.thingIDNumber == catalystTargetId);
+                            SentientIdentityProfileExtension targetProfile = target != null && SentientMechRegistry.IsSentient(target)
+                                ? SentientIdentityProfiles.Resolve(target.def) : null;
+                            Check(targetProfile != null && targetProfile.childhoodBackstories.Contains(target.story.Childhood)
+                                && targetProfile.adulthoodBackstories.Contains(target.story.Adulthood),
+                                "catalyst job converted with the race profile");
+                            ModSettings.UseIdentityProfiles = catalystSettingBefore;
+                            catalystModePending = false;
+                        }
                         Pawn pawn = FindSentient();
                         Check(pawn != null && !pawn.Dead, "sentient pawn alive after 1500 ticks");
                         if (pawn != null)
@@ -260,6 +281,20 @@ namespace Mechanoid_Sentience
 
         private static void ConvertAndRollback()
         {
+            bool previousProfileMode = ModSettings.UseIdentityProfiles;
+            ModSettings.UseIdentityProfiles = false;
+            try
+            {
+                ConvertAndRollbackCore();
+            }
+            finally
+            {
+                ModSettings.UseIdentityProfiles = previousProfileMode;
+            }
+        }
+
+        private static void ConvertAndRollbackCore()
+        {
             Map map = Find.CurrentMap;
             IntVec3 near = map.mapPawns.FreeColonists.First().Position;
 
@@ -275,7 +310,9 @@ namespace Mechanoid_Sentience
             string originalDef = converted.def.defName;
             int hediffs = converted.health.hediffSet.hediffs.Count;
             ThingWithComps weapon = converted.equipment?.Primary;
+            ModSettings.UseIdentityProfiles = true;
             bool ok = SentientMechConverter.TryConvert(converted, showMessages: false);
+            ModSettings.UseIdentityProfiles = false;
             Check(ok, "TryConvert succeeded");
             Check(converted.thingIDNumber == id && converted.Spawned && !converted.Dead, "same pawn, still spawned");
             Check(converted.def.defName == SentientMechRegistry.DefPrefix + originalDef, "def is " + SentientMechRegistry.DefPrefix + originalDef + " (was " + converted.def.defName + ")");
@@ -284,6 +321,8 @@ namespace Mechanoid_Sentience
             Check(converted.health.hediffSet.hediffs.Count == hediffs, "hediffs kept");
             Check(converted.equipment?.Primary == weapon, "weapon kept");
             Check(converted.story != null && converted.skills != null && converted.workSettings != null && converted.Name != null, "humanlike identity trackers and a name");
+            Check(ok && SentientIdentityProfiles.Resolve(converted.def)?.childhoodBackstories.Contains(converted.story.Childhood) == true,
+                "main save/reload pawn starts with a profile childhood");
             Check(converted.Faction == Faction.OfPlayer && converted.GetOverseer() == null, "player faction, no overseer");
             Check(converted.RaceProps.Humanlike && !SentientMechUtility.IsHumanlikeVisuals(converted.RaceProps.Humanlike, converted.RaceProps), "humanlike for trackers, not for visuals (infix result)");
             Check(!SentientMechUtility.IsOrdinaryMechanoid(converted.RaceProps.IsMechanoid, converted.RaceProps), "not an ordinary mechanoid");
@@ -310,10 +349,19 @@ namespace Mechanoid_Sentience
 
             Pawn spare = Spawn("Mech_Militor");
             int before = SentientCount(map);
+            HashSet<int> beforeIds = map.mapPawns.AllPawnsSpawned.Where(SentientMechRegistry.IsSentient)
+                .Select(p => p.thingIDNumber).ToHashSet();
             IncidentParms parms = StorytellerUtility.DefaultParmsNow(IncidentCategoryDefOf.Misc, map);
             parms.forced = true;
+            ModSettings.UseIdentityProfiles = true;
             bool fired = DefDatabase<IncidentDef>.GetNamed("MS_MechanoidAwakening").Worker.TryExecute(parms);
+            ModSettings.UseIdentityProfiles = false;
             Check(fired && SentientCount(map) == before + 1, "awakening incident converted one more mech (" + before + " -> " + SentientCount(map) + ")");
+            Pawn awakened = map.mapPawns.AllPawnsSpawned.FirstOrDefault(p => SentientMechRegistry.IsSentient(p) && !beforeIds.Contains(p.thingIDNumber));
+            SentientIdentityProfileExtension awakenedProfile = awakened == null ? null : SentientIdentityProfiles.Resolve(awakened.def);
+            Check(awakenedProfile != null && awakenedProfile.childhoodBackstories.Contains(awakened.story.Childhood)
+                && awakenedProfile.adulthoodBackstories.Contains(awakened.story.Adulthood),
+                "awakening incident used the race profile");
             GC.KeepAlive(spare);
 
             Log.Message("AUTOTEST info WVC - Work Modes active=" + WorkModesCompat.IsActive);
@@ -348,6 +396,7 @@ namespace Mechanoid_Sentience
             CheckDirectGeneration();
             DmsLadyAutoTest.Run(Spawn);
             CheckUnknownBackstories(Spawn);
+            CheckIdentityProfiles(Spawn);
 
             Log.Message("AUTOTEST info Rimpsyche active=" + RimpsycheAutoTest.IsActive);
             if (RimpsycheAutoTest.IsActive)
@@ -357,6 +406,22 @@ namespace Mechanoid_Sentience
                 RimpsycheAutoTest.CheckStartingAndGenerated();
                 RimpsycheAutoTest.CheckConversations(Spawn);
                 RimpsycheAutoTest.CheckAllSentientOnMap(map);
+            }
+
+            Pawn worker = map.mapPawns.FreeColonists
+                .FirstOrDefault(p => p.RaceProps.Humanlike && !SentientMechRegistry.IsSentient(p));
+            Check(worker != null, "human worker is available for the catalyst job");
+            if (worker != null)
+            {
+                Pawn catalystMech = Spawn("Mech_Constructoid");
+                Thing catalyst = ThingMaker.MakeThing(MS_ThingDefOf.MS_MechSentienceCatalyst);
+                GenSpawn.Spawn(catalyst, CellFinder.RandomClosewalkCellNear(worker.Position, map, 3), map);
+                Job job = JobMaker.MakeJob(MS_JobDefOf.MS_ApplyMechSentienceCatalyst, catalystMech, catalyst);
+                job.count = 1;
+                job.playerForced = true;
+                bool started = worker.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+                Check(started, "catalyst job started");
+                if (started) catalystTargetId = catalystMech.thingIDNumber;
             }
         }
 
@@ -419,6 +484,46 @@ namespace Mechanoid_Sentience
             if (generated != null)
             {
                 Find.WorldPawns.PassToWorld(generated, RimWorld.Planet.PawnDiscardDecideMode.Discard);
+            }
+
+            PawnKindDef lancerOriginal = DefDatabase<PawnKindDef>.GetNamed("Mech_Lancer");
+            if (!SentientMechRegistry.TryGetSentient(lancerOriginal.race, lancerOriginal, out _, out PawnKindDef lancerKind))
+            {
+                Fail("no sentient kind for Mech_Lancer");
+            }
+            else
+            {
+                bool previous = ModSettings.UseIdentityProfiles;
+                try
+                {
+                    foreach (bool profileMode in new[] { false, true })
+                    {
+                        ModSettings.UseIdentityProfiles = profileMode;
+                        Faction faction = FactionUtility.DefaultFactionFrom(lancerKind.defaultFactionDef);
+                        Pawn lancer = PawnGenerator.GeneratePawn(lancerKind, faction, Find.CurrentMap.Tile);
+                        try
+                        {
+                            SkillRecord shooting = lancer.skills.GetSkill(DefDatabase<SkillDef>.GetNamed("Shooting"));
+                            SentientIdentityProfileExtension profile = SentientIdentityProfiles.Resolve(lancer.def);
+                            bool valid = profileMode
+                                ? shooting.levelInt >= 12 && shooting.levelInt <= 15
+                                    && (shooting.passion == Passion.Minor || shooting.passion == Passion.Major)
+                                    && profile.childhoodBackstories.Contains(lancer.story.Childhood)
+                                    && profile.adulthoodBackstories.Contains(lancer.story.Adulthood)
+                                : shooting.levelInt == 10 && shooting.passion == Passion.Major;
+                            Check(valid, "directly spawned sentient lancer has expected Shooting and stories (profiles "
+                                + (profileMode ? "on" : "off") + ")");
+                        }
+                        finally
+                        {
+                            Find.WorldPawns.PassToWorld(lancer, RimWorld.Planet.PawnDiscardDecideMode.Discard);
+                        }
+                    }
+                }
+                finally
+                {
+                    ModSettings.UseIdentityProfiles = previous;
+                }
             }
 
             Pawn human = PawnGenerator.GeneratePawn(new PawnGenerationRequest(PawnKindDefOf.Colonist, Faction.OfPlayer, forceGenerateNewPawn: true));
@@ -557,6 +662,160 @@ namespace Mechanoid_Sentience
                 butcherBill.ingredientFilter.SetAllow(corpse.def, true);
                 Check(!butcherBill.IsFixedOrAllowedIngredient(corpse), who + " corpse is rejected by butcher creature");
                 Check(cremate.fixedIngredientFilter.Allows(corpse), who + " corpse still passes the cremate fixed filter");
+            }
+        }
+
+        private static void CheckIdentityProfiles(Func<string, Pawn> spawn)
+        {
+            bool previous = ModSettings.UseIdentityProfiles;
+            ModSettings.UseIdentityProfiles = true;
+            try
+            {
+                int checkedRaces = 0;
+                bool sawNone = false;
+                bool sawMinor = false;
+                bool sawMajor = false;
+                foreach (ThingDef sentient in SentientMechRegistry.SentientRaces)
+                {
+                    ThingDef original = SentientMechRegistry.OriginalRaceOf(sentient);
+                    if (!SentientIdentityProfiles.IsShippedRace(original)) continue;
+                    checkedRaces++;
+                    SentientIdentityProfileExtension profile = SentientIdentityProfiles.Resolve(sentient);
+                    Check(profile != null, original.defName + " has a valid identity profile");
+                    if (profile == null) continue;
+                    Check(profile.childhoodBackstories.Count == 2 && profile.adulthoodBackstories.Count == 2,
+                        original.defName + " has two choices in each story slot");
+                    PawnKindDef kind = DefDatabase<PawnKindDef>.AllDefsListForReading
+                        .FirstOrDefault(k => k.race == original && k.defName == original.defName)
+                        ?? DefDatabase<PawnKindDef>.AllDefsListForReading.FirstOrDefault(k => k.race == original);
+                    if (kind == null)
+                    {
+                        Fail(original.defName + " has no pawn kind for profile conversion");
+                        continue;
+                    }
+                    Pawn pawn = spawn(kind.defName);
+                    if (!SentientMechConverter.TryConvert(pawn, showMessages: false))
+                    {
+                        Fail(original.defName + " did not convert in profile mode");
+                        continue;
+                    }
+                    bool storiesOk = profile.childhoodBackstories.Contains(pawn.story.Childhood)
+                        && profile.adulthoodBackstories.Contains(pawn.story.Adulthood);
+                    bool levelsOk = true;
+                    bool passionsOk = true;
+                    bool traitsOk = true;
+                    BackstoryDef childhood = pawn.story.Childhood;
+                    BackstoryDef adulthood = pawn.story.Adulthood;
+                    List<Trait> traits = pawn.story.traits.allTraits.ToList();
+                    for (int roll = 0; roll < 16; roll++)
+                    {
+                        int seed = 12000 + checkedRaces * 100 + roll;
+                        Rand.PushState(seed);
+                        SentientMechGenerator.GenerateBaselineSkillsForTesting(pawn);
+                        Dictionary<SkillDef, Passion> baseline = pawn.skills.skills.ToDictionary(s => s.def, s => s.passion);
+                        Rand.PopState();
+                        Rand.PushState(seed);
+                        SentientMechGenerator.RegenerateSkills(pawn);
+                        Rand.PopState();
+                        storiesOk &= pawn.story.Childhood == childhood && pawn.story.Adulthood == adulthood;
+                        traitsOk &= pawn.story.traits.allTraits.SequenceEqual(traits);
+                        foreach (SkillRecord skill in pawn.skills.skills)
+                        {
+                            PreferredSkill preferred = profile.preferredSkills.FirstOrDefault(p => p.skill == skill.def);
+                            int minLevel = preferred?.minLevel ?? profile.defaultSkillMinLevel;
+                            int maxLevel = preferred?.maxLevel ?? profile.defaultSkillMaxLevel;
+                            levelsOk &= skill.Level >= minLevel && skill.Level <= maxLevel;
+                            if (preferred == null)
+                            {
+                                passionsOk &= skill.passion == baseline[skill.def];
+                                continue;
+                            }
+                            bool required = traits.Any(t => t.def.RequiresPassion(skill.def));
+                            bool forbidden = skill.TotallyDisabled || traits.Any(t => t.def.ConflictsWithPassion(skill.def));
+                            if (forbidden) passionsOk &= skill.passion == Passion.None;
+                            else
+                            {
+                                int minPassion = required ? Math.Max(1, preferred.minPassion) : preferred.minPassion;
+                                passionsOk &= (int)skill.passion >= minPassion && (int)skill.passion <= preferred.maxPassion;
+                                if (!required && preferred.minPassion == 0 && preferred.maxPassion == 1)
+                                {
+                                    sawNone |= skill.passion == Passion.None;
+                                    sawMinor |= skill.passion == Passion.Minor;
+                                }
+                                if (preferred.minPassion == 1 && preferred.maxPassion == 2)
+                                {
+                                    sawMinor |= skill.passion == Passion.Minor;
+                                    sawMajor |= skill.passion == Passion.Major;
+                                }
+                                if (preferred.minPassion == 2 && preferred.maxPassion == 2)
+                                    passionsOk &= skill.passion == Passion.Major;
+                            }
+                        }
+                    }
+                    foreach (Trait trait in traits)
+                    {
+                        traitsOk &= trait.GetDisabledWorkTypes().Count == 0 && trait.def.disabledWorkTags == WorkTags.None;
+                        traitsOk &= !(trait.def.defName == "PsychicSensitivity" && trait.Degree <= -2);
+                        traitsOk &= !profile.preferredSkills.Any(p => p.maxPassion > 0 && trait.def.ConflictsWithPassion(p.skill));
+                        traitsOk &= !new[] { "Nudist", "DrugDesire", "Gourmand", "Cannibal", "CreepyBreathing",
+                            "Immunity", "Beauty", "BodyPurist", "Gay", "Bisexual", "Asexual", "QuickSleeper" }
+                            .Contains(trait.def.defName);
+                    }
+                    Check(storiesOk && traitsOk, original.defName + " profile stories and traits remain valid across rerolls");
+                    Check(levelsOk && passionsOk, original.defName + " profile level and passion bounds; other passions match the baseline");
+                }
+                Check(checkedRaces == (ModsConfig.OdysseyActive ? 24 : 23),
+                    "all loaded vanilla races have profile coverage (" + checkedRaces + ")");
+                Check(sawNone && sawMinor && sawMajor, "inclusive passion ranges produced none, minor and major");
+
+                SentientIdentityProfileExtension constructoidProfile = SentientIdentityProfiles.Resolve(
+                    SentientMechRegistry.SentientOf(DefDatabase<ThingDef>.GetNamed("Mech_Constructoid")));
+                bool[] childhoodSeen = new bool[2];
+                bool[] adulthoodSeen = new bool[2];
+                for (int i = 0; i < 24 && !(childhoodSeen.All(x => x) && adulthoodSeen.All(x => x)); i++)
+                {
+                    Pawn pawn = spawn("Mech_Constructoid");
+                    if (!SentientMechConverter.TryConvert(pawn, showMessages: false))
+                    {
+                        Fail("constructoid story choice conversion failed");
+                        break;
+                    }
+                    for (int choice = 0; choice < 2; choice++)
+                    {
+                        childhoodSeen[choice] |= pawn.story.Childhood == constructoidProfile.childhoodBackstories[choice];
+                        adulthoodSeen[choice] |= pawn.story.Adulthood == constructoidProfile.adulthoodBackstories[choice];
+                    }
+                }
+                Check(childhoodSeen.All(x => x) && adulthoodSeen.All(x => x),
+                    "both constructoid profile choices appear in each story slot");
+
+                PawnKindDef originalKind = DefDatabase<PawnKindDef>.GetNamed("Mech_Constructoid");
+                Check(SentientMechRegistry.TryGetSentient(originalKind.race, originalKind, out ThingDef sentientRace,
+                    out PawnKindDef sentientKind), "constructoid starting kind resolves");
+                Pawn starter = null;
+                try
+                {
+                    starter = PawnGenerator.GeneratePawn(new PawnGenerationRequest(originalKind, Faction.OfPlayer,
+                        PawnGenerationContext.NonPlayer, forceGenerateNewPawn: true, canGeneratePawnRelations: false,
+                        developmentalStages: DevelopmentalStage.Adult));
+                    SentientMechConverter.PrepareUnspawned(starter, sentientRace, sentientKind);
+                    Check(!starter.Spawned && constructoidProfile.childhoodBackstories.Contains(starter.story.Childhood)
+                        && constructoidProfile.adulthoodBackstories.Contains(starter.story.Adulthood),
+                        "unspawned starting mech used the race profile");
+                }
+                catch (Exception ex)
+                {
+                    Fail("unspawned starting profile conversion threw " + ex);
+                }
+                finally
+                {
+                    if (starter != null)
+                        Find.WorldPawns.PassToWorld(starter, RimWorld.Planet.PawnDiscardDecideMode.Discard);
+                }
+            }
+            finally
+            {
+                ModSettings.UseIdentityProfiles = previous;
             }
         }
 
@@ -726,6 +985,11 @@ namespace Mechanoid_Sentience
 
         private static void Finish()
         {
+            if (catalystModePending)
+            {
+                ModSettings.UseIdentityProfiles = catalystSettingBefore;
+                catalystModePending = false;
+            }
             Log.Message("AUTOTEST DONE failures=" + failures);
             step = Step.Done;
             Root.Shutdown();

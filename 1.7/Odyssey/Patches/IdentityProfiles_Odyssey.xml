@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Patch>
+  <Operation Class="PatchOperationAdd">
+    <xpath>/Defs/ThingDef[defName="Mech_Cyclops"]</xpath>
+    <value>
+      <modExtensions>
+        <li Class="Mechanoid_Sentience.SentientIdentityProfileExtension">
+          <preferredSkills>
+            <li>
+              <skill>Shooting</skill>
+              <minLevel>9</minLevel>
+              <maxLevel>12</maxLevel>
+              <minPassion>1</minPassion>
+              <maxPassion>2</maxPassion>
+            </li>
+          </preferredSkills>
+          <childhoodBackstories>
+            <li>MS_Childhood_PrecisionCalibration</li>
+            <li>MS_Childhood_ShieldProtocol</li>
+          </childhoodBackstories>
+          <adulthoodBackstories>
+            <li>MS_Adulthood_SiegePlatform</li>
+            <li>MS_Adulthood_PerimeterGuardian</li>
+          </adulthoodBackstories>
+        </li>
+      </modExtensions>
+    </value>
+  </Operation>
+</Patch>
