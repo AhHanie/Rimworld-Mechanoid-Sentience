@@ -67,7 +67,7 @@ namespace Mechanoid_Sentience
                     Log.Error("[Mechanoid Sentience] " + sentientKind.defName + ": " + problem);
                 }
             }
-            Logger.Message("Validated " + checkedPairs + " sentient mechanoid race(s)" + (vefExtras > 0 ? " (" + vefExtras + " with the optional VEF ability comp)" : "") + (dmsRaces > 0 ? " (" + dmsRaces + " Dead Man's Switch / FFF race(s))" : "") + (psycheRaces > 0 ? " (" + psycheRaces + " with a Rimpsyche psyche, nonsexual)" : "") + ".");
+            Logger.Message("Validated " + checkedPairs + " sentient mechanoid race(s)" + (vefExtras > 0 ? " (" + vefExtras + " with the optional VEF ability comp)" : "") + (dmsRaces > 0 ? " (" + dmsRaces + " Fortified mech race(s))" : "") + (psycheRaces > 0 ? " (" + psycheRaces + " with a Rimpsyche psyche, nonsexual)" : "") + ".");
         }
 
         private static IEnumerable<string> RaceProblems(ThingDef original, ThingDef sentient)
@@ -133,7 +133,7 @@ namespace Mechanoid_Sentience
             }
             if (dmsKind == DmsRaceKind.HumanlikeAutomatroid && (sentient.inspectorTabs == null || !sentient.inspectorTabs.Contains(typeof(ITab_Pawn_Character)) || !sentient.inspectorTabs.Contains(typeof(ITab_Pawn_Social))))
             {
-                yield return "humanlike Dead Man's Switch mech lacks the Character or Social tab";
+                yield return "Fortified humanlike mech lacks the Character or Social tab";
             }
             foreach (CompProperties comp in sentient.comps ?? new List<CompProperties>())
             {

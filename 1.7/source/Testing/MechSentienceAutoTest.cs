@@ -11,7 +11,7 @@ namespace Mechanoid_Sentience
 {
     public class MechSentienceAutoTest : GameComponent
     {
-        private enum Step { WaitForGame, ConvertAndRollback, Run, MechanoidUpgrades, GestatableApocriton, ResurrectEnemyMechanoids, Maidnoid, Rimpsyche, Screenshot, Save, WaitForLoad, VerifyAfterLoad, Done }
+        private enum Step { WaitForGame, ConvertAndRollback, Run, MechanoidUpgrades, GestatableApocriton, ResurrectEnemyMechanoids, Maidnoid, Rimpsyche, Screenshot, Save, WaitForLoad, VerifyAfterLoad, VerifyRockySecondLoad, Done }
 
         private const string SaveName = "mechsentienceautotest";
         private const int MaxFramesPerStep = 4000;
@@ -182,6 +182,7 @@ namespace Mechanoid_Sentience
                     }
                     break;
                 case Step.Save:
+                    RockyAutoTest.MarkLegacyAppearance(Find.CurrentMap);
                     if (GestatableApocritonCompat.IsAvailable)
                     {
                         GestatableApocritonAutoTest.WithLegacyStorageGone(() => GameDataSaveLoader.SaveGame(SaveName));
@@ -203,6 +204,7 @@ namespace Mechanoid_Sentience
                 case Step.VerifyAfterLoad:
                     if (stepFrames == 30)
                     {
+                        RockyAutoTest.VerifyAfterLoad(Find.CurrentMap, firstLoad: true);
                         Pawn pawn = FindSentient();
                         Check(pawn != null && pawn.thingIDNumber == sentientThingId, "same pawn (ThingID " + sentientThingId + ") after reload");
                         WeaponlessAutoTest.VerifyAfterLoad(Find.CurrentMap);
@@ -253,6 +255,23 @@ namespace Mechanoid_Sentience
                     if (stepFrames > 400)
                     {
                         Check(FindSentient() != null && !FindSentient().Dead, "sentient pawn alive after reload and more ticks");
+                        if (RockyAutoTest.PrepareSecondLoad(Find.CurrentMap))
+                        {
+                            GameDataSaveLoader.SaveGame("mechsentienceautotest_rocky_repaired");
+                            gameBeforeLoad = Current.Game;
+                            GameDataSaveLoader.LoadGame("mechsentienceautotest_rocky_repaired");
+                            Next(Step.VerifyRockySecondLoad);
+                        }
+                        else
+                        {
+                            Finish();
+                        }
+                    }
+                    break;
+                case Step.VerifyRockySecondLoad:
+                    if (Current.Game != gameBeforeLoad && Find.CurrentMap != null && !LongEventHandler.AnyEventNowOrWaiting)
+                    {
+                        RockyAutoTest.VerifyAfterLoad(Find.CurrentMap, firstLoad: false);
                         Finish();
                     }
                     break;
@@ -395,6 +414,7 @@ namespace Mechanoid_Sentience
             CheckMetalhorrorExclusion(Spawn);
             CheckDirectGeneration();
             DmsLadyAutoTest.Run(Spawn);
+            RockyAutoTest.Run(Spawn);
             CheckUnknownBackstories(Spawn);
             CheckIdentityProfiles(Spawn);
 

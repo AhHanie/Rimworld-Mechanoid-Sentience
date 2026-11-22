@@ -16,6 +16,10 @@ namespace Mechanoid_Sentience
             }
             if (!thing.def.IsWeapon)
             {
+                if (thing.def.IsApparel && DeadMansSwitchCompat.CanWearApparel(pawn))
+                {
+                    return;
+                }
                 cantReason = "MechanoidSentience.CannotEquipNonWeapon".Translate();
                 __result = false;
                 return;

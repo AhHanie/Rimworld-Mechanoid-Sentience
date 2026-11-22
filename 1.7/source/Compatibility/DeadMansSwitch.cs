@@ -125,33 +125,24 @@ namespace Mechanoid_Sentience
 
         public static DmsRaceKind ClassifyRace(ThingDef race)
         {
-            if (race?.comps == null)
-            {
-                return DmsRaceKind.None;
-            }
-            bool drone = false;
             bool ownership = false;
-            foreach (CompProperties props in race.comps)
+            if (race?.comps != null)
             {
-                CompSignature signature = CompSignature.Of(props);
-                if (Matches(signature, DronePropsName, DroneCompName))
+                foreach (CompProperties props in race.comps)
                 {
-                    drone = true;
+                    CompSignature signature = CompSignature.Of(props);
+                    if (Matches(signature, DronePropsName, DroneCompName))
+                    {
+                        return DmsRaceKind.PlatformDrone;
+                    }
+                    ownership |= IsOwnershipComp(signature);
                 }
-                else if (Matches(signature, DeadManSwitchPropsName, DeadManSwitchCompName) || Matches(signature, InteractePropsName, InteracteCompName))
-                {
-                    ownership = true;
-                }
             }
-            if (drone)
+            if (ImplementsHumanlikeMech(race?.thingClass))
             {
-                return DmsRaceKind.PlatformDrone;
+                return DmsRaceKind.HumanlikeAutomatroid;
             }
-            if (!ownership)
-            {
-                return DmsRaceKind.None;
-            }
-            return ImplementsHumanlikeMech(race.thingClass) ? DmsRaceKind.HumanlikeAutomatroid : DmsRaceKind.Automatroid;
+            return ownership ? DmsRaceKind.Automatroid : DmsRaceKind.None;
         }
 
         private static bool ImplementsHumanlikeMech(Type thingClass)
@@ -240,7 +231,7 @@ namespace Mechanoid_Sentience
         {
             if (summary.Count > 0)
             {
-                Logger.Message("Dead Man's Switch / FFF races (" + summary.Count + "):\n" + string.Join("\n", summary));
+                Logger.Message("Fortified mech races (" + summary.Count + "):\n" + string.Join("\n", summary));
             }
         }
 

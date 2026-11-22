@@ -13,7 +13,7 @@ namespace Mechanoid_Sentience
     {
         private const string LadyKindName = "DMS_Mech_Lady";
 
-        private sealed class RenderSnapshot
+        internal sealed class RenderSnapshot
         {
             public string Text;
             public string RenderTree;
@@ -103,12 +103,12 @@ namespace Mechanoid_Sentience
             CheckWorn(rolledBack, rolledBackWorn, rolledBackIds, rolledBackHitPoints, rolledBackShirt, rolledBackLocked, "rolled back Lady");
         }
 
-        private static ThingComp ApparelComp(Pawn pawn)
+        internal static ThingComp ApparelComp(Pawn pawn)
         {
             return pawn.AllComps.FirstOrDefault(c => DeadMansSwitchCompat.IsMechApparelComp(CompSignature.Of(c.props)));
         }
 
-        private static Apparel Dress(Pawn pawn, bool locked, string preferredDefName)
+        internal static Apparel Dress(Pawn pawn, bool locked, string preferredDefName)
         {
             ThingDef def = DefDatabase<ThingDef>.GetNamedSilentFail(preferredDefName);
             if (def == null || !CanWear(pawn, def))
@@ -130,7 +130,7 @@ namespace Mechanoid_Sentience
                 && pawn.apparel.WornApparel.All(a => ApparelUtility.CanWearTogether(a.def, def, pawn.RaceProps.body));
         }
 
-        private static void CheckWorn(Pawn pawn, List<Apparel> expected, List<string> ids, List<int> hitPoints, Apparel locked, bool wasLocked, string what)
+        internal static void CheckWorn(Pawn pawn, List<Apparel> expected, List<string> ids, List<int> hitPoints, Apparel locked, bool wasLocked, string what)
         {
             Check(expected.Count > 0, what + " was wearing something");
             Check(pawn.apparel.WornApparel.Count == expected.Count && expected.All(a => pawn.apparel.WornApparel.Contains(a)), what + " wears exactly the same apparel instances (" + pawn.apparel.WornApparel.Count + " of " + expected.Count + ")");
@@ -166,7 +166,7 @@ namespace Mechanoid_Sentience
             Check(shirt.Spawned && militor.apparel.WornApparel.Count == 0, "an ordinary sentient mech leaves the apparel where it was");
         }
 
-        private static void Compare(RenderSnapshot before, RenderSnapshot after, string what)
+        internal static void Compare(RenderSnapshot before, RenderSnapshot after, string what)
         {
             Check(after.BodyNode && after.HeadNode, what + " has body and head render nodes");
             Check(after.RenderTree == before.RenderTree, what + " keeps render tree " + before.RenderTree + " (now " + after.RenderTree + ")");
@@ -236,7 +236,7 @@ namespace Mechanoid_Sentience
             return tattoo != null && !tattoo.noGraphic;
         }
 
-        private static RenderSnapshot Measure(Pawn pawn)
+        internal static RenderSnapshot Measure(Pawn pawn, Rot4? facing = null)
         {
             var result = new RenderSnapshot { RenderTree = pawn.RaceProps.renderTree?.defName ?? "none", BodySize = pawn.BodySize };
             var text = new StringBuilder();
@@ -262,7 +262,7 @@ namespace Mechanoid_Sentience
             tree.EnsureInitialized(PawnRenderFlags.None);
             PawnDrawParms parms = PawnDrawParms.DefaultFor(pawn);
             parms.pawn = pawn;
-            parms.facing = Rot4.South;
+            parms.facing = facing ?? Rot4.South;
             parms.matrix = Matrix4x4.identity;
             if (tree.TryGetNodeByTag(PawnRenderNodeTagDefOf.Body, out PawnRenderNode body))
             {

@@ -114,7 +114,9 @@ namespace Mechanoid_Sentience
             }
             bool changed = false;
             DeadMansSwitchCompat.GetHumanlikeAppearanceOverrides(pawn.def, out BodyTypeDef bodyOverride, out HeadTypeDef headOverride);
-            if (overwrite || story.bodyType == null)
+            bool legacyBodyType = bodyOverride != null && story.bodyType != bodyOverride
+                && story.bodyType?.defName == SentientDefGenerator.BodyTypeName;
+            if (overwrite || story.bodyType == null || legacyBodyType)
             {
                 story.bodyType = bodyOverride ?? DefDatabase<BodyTypeDef>.GetNamed(SentientDefGenerator.BodyTypeName);
                 changed = true;
@@ -129,7 +131,7 @@ namespace Mechanoid_Sentience
                 story.skinColorOverride = SentientMechUtility.NeutralSkinColor;
                 story.SkinColorBase = SentientMechUtility.NeutralSkinColor;
             }
-            if (overwrite || story.headType == null)
+            if (overwrite || story.headType == null || (legacyBodyType && headOverride != null))
             {
                 if (headOverride != null)
                 {
